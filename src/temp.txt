@@ -1,0 +1,1 @@
+sudo mn -c; sudo pkill -9 python3; sudo pkill -9 mn; sudo ovs-vsctl list-br | xargs -r -n1 sudo ovs-vsctl del-br; sudo ip link del HCM_DIST01_w2 2>/dev/null || true; sudo ip link del NT_DIST01_w2 2>/dev/null || true

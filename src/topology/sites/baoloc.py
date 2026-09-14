@@ -176,6 +176,7 @@ def start_frr_baoloc(gw_host):
                 '-c "router ospf" '
                 '-c "router-id 10.10.99.1" '
                 '-c "network 10.10.0.0/16 area 0" '
+                '-c "network 192.168.10.0/30 area 0" '
                 '-c "exit" '
                 '-c "exit"')
     print('[BL-GW] FRR OSPF started')

@@ -178,13 +178,12 @@ nhatrang:
 
   # Access switch assignment (NT-ACC01..06)
   access_switch_assignment:
-    NT-ACC01: [110]           # ADMIN
-    NT-ACC02: [120]           # SALES
-    NT-ACC03: [130]           # ACCOUNTING
-    NT-ACC04: [140]           # HR
-    NT-ACC05: [150]           # CUSTOMER
-    NT-ACC06: [160, 170, 175, 180, 190]  # IT + IoT + CCTV + WiFi + Voice
-
+    NT_ACC01: [110]           # ADMIN
+    NT_ACC02: [120]           # SALES
+    NT_ACC03: [130]           # ACCOUNTING
+    NT_ACC04: [140]           # HR
+    NT_ACC05: [150]           # CUSTOMER
+    NT_ACC06: [160, 170, 175, 180, 190]  # IT + IoT + CCTV + WiFi + Voice
   hosts:
     # VLAN 110 ADMIN
     - { name: NT_ADM01, ip: 10.20.10.11/24, gw: 10.20.10.1, vlan: 110 }
@@ -279,12 +278,12 @@ hcm:
       gateway: 10.30.99.1
 
   access_switch_assignment:
-    HCM-ACC01: [210]               # ADMIN
-    HCM-ACC02: [220]               # SALES
-    HCM-ACC03: [230]               # ACCOUNTING
-    HCM-ACC04: [240]               # HR
-    HCM-ACC05: [250, 260]          # MARKETING + CUSTOMER
-    HCM-ACC06: [270, 280, 290, 295, 296, 297]  # TECH + IT + IoT/CCTV/WIFI/VOICE
+    HCM_ACC01: [210]               # ADMIN
+    HCM_ACC02: [220]               # SALES
+    HCM_ACC03: [230]               # ACCOUNTING
+    HCM_ACC04: [240]               # HR
+    HCM_ACC05: [250, 260]          # MARKETING + CUSTOMER
+    HCM_ACC06: [270, 280, 290, 295, 296, 297]  # TECH + IT + IoT/CCTV/WIFI/VOICE
 
   hosts:
     - { name: HCM_ADM01, ip: 10.30.10.11/24, gw: 10.30.10.1, vlan: 210 }

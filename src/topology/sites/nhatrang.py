@@ -251,6 +251,7 @@ def start_frr_nhatrang(nt_nodes):
             f'-c "router ospf" '
             f'-c "router-id {router_id}" '
             f'-c "network 10.20.0.0/16 area 0" '
+            f'-c "network 192.168.20.0/30 area 0" '
             f'-c "exit" -c "exit"'
         )
         print(f'  [{dist_name}] FRR OSPF started, router-id={router_id}')

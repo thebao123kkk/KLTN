@@ -4,24 +4,24 @@
 # ============================================================
 
 # ──────────────────────────────────────────────────────────
-# DHCP Server — DC-DHCP01 (10.100.40.12)
-# dnsmasq chạy trong Mininet host DC-DHCP01
+# DHCP Server — DC_DHCP01 (10.100.40.12)
+# dnsmasq chạy trong Mininet host DC_DHCP01
 # ──────────────────────────────────────────────────────────
 dhcp:
-  server_host: DC-DHCP01
+  server_host: DC_DHCP01
   server_ip: 10.100.40.12
   lease_time: 12h
   dns_server: 10.100.40.11    # DC-DNS01
-  ntp_server: 10.100.60.11    # DC-MGMT01
+  ntp_server: 10.100.60.11    # DC_MGMT01
   domain: enterprise.local
 
   # DHCP Relay: DIST switch gửi DHCP request lên cả DHCP01 (Primary) và DHCP02 (Backup) tại DC
   relay_agents:
     - site: nhatrang
-      relay_hosts: [NT-DIST01, NT-DIST02]
+      relay_hosts: [NT_DIST01, NT_DIST02]
       relay_ips: [10.100.40.12, 10.100.40.13]
     - site: hcm
-      relay_hosts: [HCM-DIST01, HCM-DIST02]
+      relay_hosts: [HCM_DIST01, HCM_DIST02]
       relay_ips: [10.100.40.12, 10.100.40.13]
     - site: baoloc
       relay_hosts: [BL-GW]
@@ -131,7 +131,7 @@ dhcp:
 # Zone: enterprise.local
 # ──────────────────────────────────────────────────────────
 dns:
-  server_host: DC-DNS01
+  server_host: DC_DNS01
   server_ip: 10.100.40.11
   zone: enterprise.local
   upstream_dns: 8.8.8.8    # forward external queries (nếu có internet)
@@ -141,51 +141,51 @@ dns:
   records:
     - fqdn: www.enterprise.local
       ip: 10.100.10.11
-      alias: DC-WEB01
+      alias: DC_WEB01
     - fqdn: www2.enterprise.local
       ip: 10.100.10.12
-      alias: DC-WEB02
+      alias: DC_WEB02
     - fqdn: app.enterprise.local
       ip: 10.100.20.11
-      alias: DC-APP01
+      alias: DC_APP01
     - fqdn: app2.enterprise.local
       ip: 10.100.20.12
-      alias: DC-APP02
+      alias: DC_APP02
     - fqdn: db.enterprise.local
       ip: 10.100.30.11
-      alias: DC-DB01
+      alias: DC_DB01
     - fqdn: db2.enterprise.local
       ip: 10.100.30.12
-      alias: DC-DB02
+      alias: DC_DB02
     - fqdn: dns.enterprise.local
       ip: 10.100.40.11
-      alias: DC-DNS01
+      alias: DC_DNS01
     - fqdn: dhcp.enterprise.local
       ip: 10.100.40.12
-      alias: DC-DHCP01
+      alias: DC_DHCP01
     - fqdn: dhcp2.enterprise.local
       ip: 10.100.40.13
-      alias: DC-DHCP02
+      alias: DC_DHCP02
     - fqdn: monitor.enterprise.local
       ip: 10.100.50.11
-      alias: DC-MON01
+      alias: DC_MON01
     - fqdn: mgmt.enterprise.local
       ip: 10.100.60.11
-      alias: DC-MGMT01
+      alias: DC_MGMT01
     - fqdn: sip.enterprise.local
       ip: 10.100.20.11
-      alias: DC-APP01
+      alias: DC_APP01
       description: "SIP server (APP01 đảm nhận VoIP)"
     - fqdn: noc.enterprise.local
       ip: 127.0.0.1
       description: "NOC Dashboard (chạy local)"
 
 # ──────────────────────────────────────────────────────────
-# NTP Server — DC-MGMT01 (10.100.60.11)
-# chrony chạy trong Mininet host DC-MGMT01
+# NTP Server — DC_MGMT01 (10.100.60.11)
+# chrony chạy trong Mininet host DC_MGMT01
 # ──────────────────────────────────────────────────────────
 ntp:
-  server_host: DC-MGMT01
+  server_host: DC_MGMT01
   server_ip: 10.100.60.11
   stratum: 2
   upstream_ntp:
@@ -198,8 +198,8 @@ ntp:
     - 10.100.0.0/16   # DC
   clients:
     - site: baoloc
-      hosts: [BL-GW]
+      hosts: [BL_GW]
     - site: nhatrang
-      hosts: [NT-DIST01, NT-DIST02]
+      hosts: [NT_DIST01, NT_DIST02]
     - site: hcm
-      hosts: [HCM-DIST01, HCM-DIST02]
+      hosts: [HCM_DIST01, HCM_DIST02]

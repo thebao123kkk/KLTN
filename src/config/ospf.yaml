@@ -17,7 +17,7 @@ routers:
   # ──────────────────────────────────────────
   # BL — Bảo Lộc (flat site, 1 router)
   # ──────────────────────────────────────────
-  BL-GW:
+  BL_GW:
     router_id: 10.10.99.1
     interfaces:
       # WAN uplink sang HCM (sẽ dùng ở Phase 9)
@@ -56,7 +56,7 @@ routers:
   # ──────────────────────────────────────────
   # NT — Nha Trang (DIST01 là OSPF DR)
   # ──────────────────────────────────────────
-  NT-DIST01:
+  NT_DIST01:
     router_id: 10.20.10.2
     vrrp_priority: 110   # VRRP master
     interfaces:
@@ -79,7 +79,7 @@ routers:
       # Link xuống NT-CORE
       link_core: { ip: 10.20.99.10/30, ospf_area: 0, ospf_cost: 1 }
 
-  NT-DIST02:
+  NT_DIST02:
     router_id: 10.20.10.3
     vrrp_priority: 100   # VRRP backup
     interfaces:
@@ -99,7 +99,7 @@ routers:
   # ──────────────────────────────────────────
   # HCM — Hồ Chí Minh (DIST01 là OSPF DR)
   # ──────────────────────────────────────────
-  HCM-DIST01:
+  HCM_DIST01:
     router_id: 10.30.10.2
     vrrp_priority: 110
     interfaces:
@@ -123,7 +123,7 @@ routers:
       vlan299: { ip: 10.30.99.2/24, ospf_passive: true }
       link_core: { ip: 10.30.99.10/30, ospf_area: 0, ospf_cost: 1 }
 
-  HCM-DIST02:
+  HCM_DIST02:
     router_id: 10.30.10.3
     vrrp_priority: 100
     interfaces:
@@ -145,7 +145,7 @@ routers:
   # ──────────────────────────────────────────
   # DC — Data Center (Spine router)
   # ──────────────────────────────────────────
-  DC-SPINE-GW:
+  DC_SPINE_GW:
     router_id: 10.100.99.1
     interfaces:
       wan0:

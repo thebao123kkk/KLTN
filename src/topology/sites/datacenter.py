@@ -242,10 +242,11 @@ def start_frr_datacenter(dc_nodes):
     gw = dc_nodes['gw']
     gw.cmd('service frr start')
     gw.cmd(
-        'vtysh _c "configure terminal" '
-        '_c "router ospf" '
-        '_c "router_id 10.100.99.1" '
-        '_c "network 10.100.0.0/16 area 0" '
-        '_c "exit" _c "exit"'
+        'vtysh -c "configure terminal" '
+        '-c "router ospf" '
+        '-c "router-id 10.100.99.1" '
+        '-c "network 10.100.0.0/16 area 0" '
+        '-c "network 192.168.30.0/30 area 0" '
+        '-c "exit" -c "exit"'
     )
     print('[DC_SPINE_GW] FRR OSPF started')
