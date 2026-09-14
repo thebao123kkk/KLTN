@@ -1,0 +1,368 @@
+# ============================================================
+# VLAN & IP ADDRESSING PLAN — Enterprise Network KLTN
+# Source: CT.md, QT.md
+# ============================================================
+
+# IP Summary per site
+sites:
+  baoloc:
+    code: BL
+    network: 10.10.0.0/16
+    ospf_router_id: 10.10.99.1
+    ospf_area: 0
+  nhatrang:
+    code: NT
+    network: 10.20.0.0/16
+    ospf_router_id: 10.20.99.1
+    ospf_area: 0
+  hcm:
+    code: HCM
+    network: 10.30.0.0/16
+    ospf_router_id: 10.30.99.1
+    ospf_area: 0
+  datacenter:
+    code: DC
+    network: 10.100.0.0/16
+    ospf_router_id: 10.100.99.1
+    ospf_area: 0
+
+# ============================================================
+# BẢO LỘC — Flat Network
+# ============================================================
+baoloc:
+  vlans:
+    10:
+      name: USER
+      subnet: 10.10.10.0/24
+      gateway: 10.10.10.1
+      description: "Tất cả PC phòng ban (ADMIN, SALES, ACC, IT)"
+    30:
+      name: IoT
+      subnet: 10.10.30.0/24
+      gateway: 10.10.30.1
+      description: "Printer, sensor"
+    35:
+      name: CCTV
+      subnet: 10.10.35.0/24
+      gateway: 10.10.35.1
+      description: "Camera an ninh"
+    50:
+      name: WIFI
+      subnet: 10.10.50.0/24
+      gateway: 10.10.50.1
+      description: "WiFi users"
+    99:
+      name: MGMT
+      subnet: 10.10.99.0/24
+      gateway: 10.10.99.1
+      description: "Quản trị thiết bị mạng"
+
+  hosts:
+    # USER VLAN 10
+    - name: BL_ADM01
+      ip: 10.10.10.11/24
+      gw: 10.10.10.1
+      vlan: 10
+    - name: BL_ADM02
+      ip: 10.10.10.12/24
+      gw: 10.10.10.1
+      vlan: 10
+    - name: BL_ADM03
+      ip: 10.10.10.13/24
+      gw: 10.10.10.1
+      vlan: 10
+    - name: BL_SAL01
+      ip: 10.10.10.21/24
+      gw: 10.10.10.1
+      vlan: 10
+    - name: BL_SAL02
+      ip: 10.10.10.22/24
+      gw: 10.10.10.1
+      vlan: 10
+    - name: BL_SAL03
+      ip: 10.10.10.23/24
+      gw: 10.10.10.1
+      vlan: 10
+    - name: BL_ACC01
+      ip: 10.10.10.31/24
+      gw: 10.10.10.1
+      vlan: 10
+    - name: BL_ACC02
+      ip: 10.10.10.32/24
+      gw: 10.10.10.1
+      vlan: 10
+    - name: BL_ACC03
+      ip: 10.10.10.33/24
+      gw: 10.10.10.1
+      vlan: 10
+    - name: BL_IT01
+      ip: 10.10.10.41/24
+      gw: 10.10.10.1
+      vlan: 10
+    - name: BL_IT02
+      ip: 10.10.10.42/24
+      gw: 10.10.10.1
+      vlan: 10
+    - name: BL_IT03
+      ip: 10.10.10.43/24
+      gw: 10.10.10.1
+      vlan: 10
+    # IoT VLAN 30
+    - name: BL_PRN01
+      ip: 10.10.30.11/24
+      gw: 10.10.30.1
+      vlan: 30
+    - name: BL_PRN02
+      ip: 10.10.30.12/24
+      gw: 10.10.30.1
+      vlan: 30
+    # CCTV VLAN 35
+    - name: BL_CAM01
+      ip: 10.10.35.11/24
+      gw: 10.10.35.1
+      vlan: 35
+    - name: BL_CAM02
+      ip: 10.10.35.12/24
+      gw: 10.10.35.1
+      vlan: 35
+
+# ============================================================
+# NHA TRANG — 3-Tier
+# ============================================================
+nhatrang:
+  vlans:
+    110:
+      name: ADMIN
+      subnet: 10.20.10.0/24
+      gateway: 10.20.10.1
+    120:
+      name: SALES
+      subnet: 10.20.20.0/24
+      gateway: 10.20.20.1
+    130:
+      name: ACCOUNTING
+      subnet: 10.20.30.0/24
+      gateway: 10.20.30.1
+    140:
+      name: HR
+      subnet: 10.20.40.0/24
+      gateway: 10.20.40.1
+    150:
+      name: CUSTOMER
+      subnet: 10.20.50.0/24
+      gateway: 10.20.50.1
+    160:
+      name: IT
+      subnet: 10.20.60.0/24
+      gateway: 10.20.60.1
+    170:
+      name: IoT
+      subnet: 10.20.70.0/24
+      gateway: 10.20.70.1
+    175:
+      name: CCTV
+      subnet: 10.20.75.0/24
+      gateway: 10.20.75.1
+    180:
+      name: WIFI
+      subnet: 10.20.80.0/24
+      gateway: 10.20.80.1
+    190:
+      name: VOICE
+      subnet: 10.20.90.0/24
+      gateway: 10.20.90.1
+    199:
+      name: MGMT
+      subnet: 10.20.99.0/24
+      gateway: 10.20.99.1
+
+  # Access switch assignment (NT-ACC01..06)
+  access_switch_assignment:
+    NT-ACC01: [110]           # ADMIN
+    NT-ACC02: [120]           # SALES
+    NT-ACC03: [130]           # ACCOUNTING
+    NT-ACC04: [140]           # HR
+    NT-ACC05: [150]           # CUSTOMER
+    NT-ACC06: [160, 170, 175, 180, 190]  # IT + IoT + CCTV + WiFi + Voice
+
+  hosts:
+    # VLAN 110 ADMIN
+    - { name: NT_ADM01, ip: 10.20.10.11/24, gw: 10.20.10.1, vlan: 110 }
+    - { name: NT_ADM02, ip: 10.20.10.12/24, gw: 10.20.10.1, vlan: 110 }
+    - { name: NT_ADM03, ip: 10.20.10.13/24, gw: 10.20.10.1, vlan: 110 }
+    # VLAN 120 SALES
+    - { name: NT_SAL01, ip: 10.20.20.11/24, gw: 10.20.20.1, vlan: 120 }
+    - { name: NT_SAL02, ip: 10.20.20.12/24, gw: 10.20.20.1, vlan: 120 }
+    - { name: NT_SAL03, ip: 10.20.20.13/24, gw: 10.20.20.1, vlan: 120 }
+    # VLAN 130 ACCOUNTING
+    - { name: NT_ACC01, ip: 10.20.30.11/24, gw: 10.20.30.1, vlan: 130 }
+    - { name: NT_ACC02, ip: 10.20.30.12/24, gw: 10.20.30.1, vlan: 130 }
+    - { name: NT_ACC03, ip: 10.20.30.13/24, gw: 10.20.30.1, vlan: 130 }
+    # VLAN 140 HR
+    - { name: NT_HR01, ip: 10.20.40.11/24, gw: 10.20.40.1, vlan: 140 }
+    - { name: NT_HR02, ip: 10.20.40.12/24, gw: 10.20.40.1, vlan: 140 }
+    - { name: NT_HR03, ip: 10.20.40.13/24, gw: 10.20.40.1, vlan: 140 }
+    # VLAN 150 CUSTOMER
+    - { name: NT_CUS01, ip: 10.20.50.11/24, gw: 10.20.50.1, vlan: 150 }
+    - { name: NT_CUS02, ip: 10.20.50.12/24, gw: 10.20.50.1, vlan: 150 }
+    - { name: NT_CUS03, ip: 10.20.50.13/24, gw: 10.20.50.1, vlan: 150 }
+    # VLAN 160 IT
+    - { name: NT_IT01, ip: 10.20.60.11/24, gw: 10.20.60.1, vlan: 160 }
+    - { name: NT_IT02, ip: 10.20.60.12/24, gw: 10.20.60.1, vlan: 160 }
+    - { name: NT_IT03, ip: 10.20.60.13/24, gw: 10.20.60.1, vlan: 160 }
+    # IoT/CCTV/WIFI/VOICE
+    - { name: NT_PRN01, ip: 10.20.70.11/24, gw: 10.20.70.1, vlan: 170 }
+    - { name: NT_PRN02, ip: 10.20.70.12/24, gw: 10.20.70.1, vlan: 170 }
+    - { name: NT_CAM01, ip: 10.20.75.11/24, gw: 10.20.75.1, vlan: 175 }
+    - { name: NT_CAM02, ip: 10.20.75.12/24, gw: 10.20.75.1, vlan: 175 }
+    - { name: NT_CAM03, ip: 10.20.75.13/24, gw: 10.20.75.1, vlan: 175 }
+    - { name: NT_AP01, ip: 10.20.80.11/24, gw: 10.20.80.1, vlan: 180 }
+    - { name: NT_PHN01, ip: 10.20.90.11/24, gw: 10.20.90.1, vlan: 190 }
+    - { name: NT_PHN02, ip: 10.20.90.12/24, gw: 10.20.90.1, vlan: 190 }
+
+# ============================================================
+# HCM — 3-Tier (lớn nhất)
+# ============================================================
+hcm:
+  vlans:
+    210:
+      name: ADMIN
+      subnet: 10.30.10.0/24
+      gateway: 10.30.10.1
+    220:
+      name: SALES
+      subnet: 10.30.20.0/24
+      gateway: 10.30.20.1
+    230:
+      name: ACCOUNTING
+      subnet: 10.30.30.0/24
+      gateway: 10.30.30.1
+    240:
+      name: HR
+      subnet: 10.30.40.0/24
+      gateway: 10.30.40.1
+    250:
+      name: MARKETING
+      subnet: 10.30.50.0/24
+      gateway: 10.30.50.1
+    260:
+      name: CUSTOMER
+      subnet: 10.30.60.0/24
+      gateway: 10.30.60.1
+    270:
+      name: TECHNICAL
+      subnet: 10.30.70.0/24
+      gateway: 10.30.70.1
+    280:
+      name: IT
+      subnet: 10.30.80.0/24
+      gateway: 10.30.80.1
+    290:
+      name: IoT
+      subnet: 10.30.90.0/24
+      gateway: 10.30.90.1
+    295:
+      name: CCTV
+      subnet: 10.30.95.0/24
+      gateway: 10.30.95.1
+    296:
+      name: WIFI
+      subnet: 10.30.96.0/24
+      gateway: 10.30.96.1
+    297:
+      name: VOICE
+      subnet: 10.30.97.0/24
+      gateway: 10.30.97.1
+    299:
+      name: MGMT
+      subnet: 10.30.99.0/24
+      gateway: 10.30.99.1
+
+  access_switch_assignment:
+    HCM-ACC01: [210]               # ADMIN
+    HCM-ACC02: [220]               # SALES
+    HCM-ACC03: [230]               # ACCOUNTING
+    HCM-ACC04: [240]               # HR
+    HCM-ACC05: [250, 260]          # MARKETING + CUSTOMER
+    HCM-ACC06: [270, 280, 290, 295, 296, 297]  # TECH + IT + IoT/CCTV/WIFI/VOICE
+
+  hosts:
+    - { name: HCM_ADM01, ip: 10.30.10.11/24, gw: 10.30.10.1, vlan: 210 }
+    - { name: HCM_ADM02, ip: 10.30.10.12/24, gw: 10.30.10.1, vlan: 210 }
+    - { name: HCM_ADM03, ip: 10.30.10.13/24, gw: 10.30.10.1, vlan: 210 }
+    - { name: HCM_SAL01, ip: 10.30.20.11/24, gw: 10.30.20.1, vlan: 220 }
+    - { name: HCM_SAL02, ip: 10.30.20.12/24, gw: 10.30.20.1, vlan: 220 }
+    - { name: HCM_SAL03, ip: 10.30.20.13/24, gw: 10.30.20.1, vlan: 220 }
+    - { name: HCM_ACC01, ip: 10.30.30.11/24, gw: 10.30.30.1, vlan: 230 }
+    - { name: HCM_ACC02, ip: 10.30.30.12/24, gw: 10.30.30.1, vlan: 230 }
+    - { name: HCM_ACC03, ip: 10.30.30.13/24, gw: 10.30.30.1, vlan: 230 }
+    - { name: HCM_HR01, ip: 10.30.40.11/24, gw: 10.30.40.1, vlan: 240 }
+    - { name: HCM_HR02, ip: 10.30.40.12/24, gw: 10.30.40.1, vlan: 240 }
+    - { name: HCM_HR03, ip: 10.30.40.13/24, gw: 10.30.40.1, vlan: 240 }
+    - { name: HCM_MKT01, ip: 10.30.50.11/24, gw: 10.30.50.1, vlan: 250 }
+    - { name: HCM_MKT02, ip: 10.30.50.12/24, gw: 10.30.50.1, vlan: 250 }
+    - { name: HCM_MKT03, ip: 10.30.50.13/24, gw: 10.30.50.1, vlan: 250 }
+    - { name: HCM_CUS01, ip: 10.30.60.11/24, gw: 10.30.60.1, vlan: 260 }
+    - { name: HCM_CUS02, ip: 10.30.60.12/24, gw: 10.30.60.1, vlan: 260 }
+    - { name: HCM_CUS03, ip: 10.30.60.13/24, gw: 10.30.60.1, vlan: 260 }
+    - { name: HCM_TCH01, ip: 10.30.70.11/24, gw: 10.30.70.1, vlan: 270 }
+    - { name: HCM_TCH02, ip: 10.30.70.12/24, gw: 10.30.70.1, vlan: 270 }
+    - { name: HCM_TCH03, ip: 10.30.70.13/24, gw: 10.30.70.1, vlan: 270 }
+    - { name: HCM_IT01, ip: 10.30.80.11/24, gw: 10.30.80.1, vlan: 280 }
+    - { name: HCM_IT02, ip: 10.30.80.12/24, gw: 10.30.80.1, vlan: 280 }
+    - { name: HCM_IT03, ip: 10.30.80.13/24, gw: 10.30.80.1, vlan: 280 }
+    - { name: HCM_PRN01, ip: 10.30.90.11/24, gw: 10.30.90.1, vlan: 290 }
+    - { name: HCM_PRN02, ip: 10.30.90.12/24, gw: 10.30.90.1, vlan: 290 }
+    - { name: HCM_PRN03, ip: 10.30.90.13/24, gw: 10.30.90.1, vlan: 290 }
+    - { name: HCM_CAM01, ip: 10.30.95.11/24, gw: 10.30.95.1, vlan: 295 }
+    - { name: HCM_CAM02, ip: 10.30.95.12/24, gw: 10.30.95.1, vlan: 295 }
+    - { name: HCM_CAM03, ip: 10.30.95.13/24, gw: 10.30.95.1, vlan: 295 }
+    - { name: HCM_CAM04, ip: 10.30.95.14/24, gw: 10.30.95.1, vlan: 295 }
+    - { name: HCM_AP01, ip: 10.30.96.11/24, gw: 10.30.96.1, vlan: 296 }
+    - { name: HCM_AP02, ip: 10.30.96.12/24, gw: 10.30.96.1, vlan: 296 }
+    - { name: HCM_PHN01, ip: 10.30.97.11/24, gw: 10.30.97.1, vlan: 297 }
+    - { name: HCM_PHN02, ip: 10.30.97.12/24, gw: 10.30.97.1, vlan: 297 }
+
+# ============================================================
+# DATA CENTER — Spine-Leaf
+# ============================================================
+datacenter:
+  vlans:
+    310:
+      name: WEB
+      subnet: 10.100.10.0/24
+      gateway: 10.100.10.1
+    320:
+      name: APP
+      subnet: 10.100.20.0/24
+      gateway: 10.100.20.1
+    330:
+      name: DB
+      subnet: 10.100.30.0/24
+      gateway: 10.100.30.1
+    340:
+      name: INFRA
+      subnet: 10.100.40.0/24
+      gateway: 10.100.40.1
+      description: "DNS, DHCP servers"
+    350:
+      name: MONITORING
+      subnet: 10.100.50.0/24
+      gateway: 10.100.50.1
+    360:
+      name: MGMT
+      subnet: 10.100.60.0/24
+      gateway: 10.100.60.1
+
+  hosts:
+    - { name: DC_WEB01,   ip: 10.100.10.11/24, gw: 10.100.10.1, vlan: 310, role: web }
+    - { name: DC_WEB02,   ip: 10.100.10.12/24, gw: 10.100.10.1, vlan: 310, role: web }
+    - { name: DC_APP01,   ip: 10.100.20.11/24, gw: 10.100.20.1, vlan: 320, role: app }
+    - { name: DC_APP02,   ip: 10.100.20.12/24, gw: 10.100.20.1, vlan: 320, role: app }
+    - { name: DC_DB01,    ip: 10.100.30.11/24, gw: 10.100.30.1, vlan: 330, role: db }
+    - { name: DC_DB02,    ip: 10.100.30.12/24, gw: 10.100.30.1, vlan: 330, role: db }
+    - { name: DC_DNS01,   ip: 10.100.40.11/24, gw: 10.100.40.1, vlan: 340, role: dns }
+    - { name: DC_DHCP01,  ip: 10.100.40.12/24, gw: 10.100.40.1, vlan: 340, role: dhcp_primary }
+    - { name: DC_DHCP02,  ip: 10.100.40.13/24, gw: 10.100.40.1, vlan: 340, role: dhcp_backup }
+    - { name: DC_MON01,   ip: 10.100.50.11/24, gw: 10.100.50.1, vlan: 350, role: monitoring }
+    - { name: DC_MGMT01,  ip: 10.100.60.11/24, gw: 10.100.60.1, vlan: 360, role: ntp }

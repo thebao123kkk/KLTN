@@ -1,0 +1,205 @@
+# ============================================================
+# Services Configuration — DHCP, DNS, NTP
+# Phase 6 — KLTN Enterprise Network
+# ============================================================
+
+# ──────────────────────────────────────────────────────────
+# DHCP Server — DC-DHCP01 (10.100.40.12)
+# dnsmasq chạy trong Mininet host DC-DHCP01
+# ──────────────────────────────────────────────────────────
+dhcp:
+  server_host: DC-DHCP01
+  server_ip: 10.100.40.12
+  lease_time: 12h
+  dns_server: 10.100.40.11    # DC-DNS01
+  ntp_server: 10.100.60.11    # DC-MGMT01
+  domain: enterprise.local
+
+  # DHCP Relay: DIST switch gửi DHCP request lên cả DHCP01 (Primary) và DHCP02 (Backup) tại DC
+  relay_agents:
+    - site: nhatrang
+      relay_hosts: [NT-DIST01, NT-DIST02]
+      relay_ips: [10.100.40.12, 10.100.40.13]
+    - site: hcm
+      relay_hosts: [HCM-DIST01, HCM-DIST02]
+      relay_ips: [10.100.40.12, 10.100.40.13]
+    - site: baoloc
+      relay_hosts: [BL-GW]
+      relay_ips: [10.100.40.12, 10.100.40.13]
+
+  # DHCP Pools — mỗi VLAN một pool
+  pools:
+    # Bảo Lộc
+    - vlan: 10
+      subnet: 10.10.10.0/24
+      range_start: 10.10.10.100
+      range_end: 10.10.10.200
+      gateway: 10.10.10.1
+      description: "BL USER"
+
+    # Nha Trang
+    - vlan: 110
+      subnet: 10.20.10.0/24
+      range_start: 10.20.10.100
+      range_end: 10.20.10.200
+      gateway: 10.20.10.1
+      description: "NT ADMIN"
+    - vlan: 120
+      subnet: 10.20.20.0/24
+      range_start: 10.20.20.100
+      range_end: 10.20.20.200
+      gateway: 10.20.20.1
+      description: "NT SALES"
+    - vlan: 130
+      subnet: 10.20.30.0/24
+      range_start: 10.20.30.100
+      range_end: 10.20.30.200
+      gateway: 10.20.30.1
+      description: "NT ACCOUNTING"
+    - vlan: 140
+      subnet: 10.20.40.0/24
+      range_start: 10.20.40.100
+      range_end: 10.20.40.200
+      gateway: 10.20.40.1
+      description: "NT HR"
+    - vlan: 150
+      subnet: 10.20.50.0/24
+      range_start: 10.20.50.100
+      range_end: 10.20.50.200
+      gateway: 10.20.50.1
+      description: "NT CUSTOMER"
+    - vlan: 160
+      subnet: 10.20.60.0/24
+      range_start: 10.20.60.100
+      range_end: 10.20.60.200
+      gateway: 10.20.60.1
+      description: "NT IT"
+
+    # HCM
+    - vlan: 210
+      subnet: 10.30.10.0/24
+      range_start: 10.30.10.100
+      range_end: 10.30.10.200
+      gateway: 10.30.10.1
+      description: "HCM ADMIN"
+    - vlan: 220
+      subnet: 10.30.20.0/24
+      range_start: 10.30.20.100
+      range_end: 10.30.20.200
+      gateway: 10.30.20.1
+      description: "HCM SALES"
+    - vlan: 230
+      subnet: 10.30.30.0/24
+      range_start: 10.30.30.100
+      range_end: 10.30.30.200
+      gateway: 10.30.30.1
+      description: "HCM ACCOUNTING"
+    - vlan: 240
+      subnet: 10.30.40.0/24
+      range_start: 10.30.40.100
+      range_end: 10.30.40.200
+      gateway: 10.30.40.1
+      description: "HCM HR"
+    - vlan: 250
+      subnet: 10.30.50.0/24
+      range_start: 10.30.50.100
+      range_end: 10.30.50.200
+      gateway: 10.30.50.1
+      description: "HCM MARKETING"
+    - vlan: 260
+      subnet: 10.30.60.0/24
+      range_start: 10.30.60.100
+      range_end: 10.30.60.200
+      gateway: 10.30.60.1
+      description: "HCM CUSTOMER"
+    - vlan: 270
+      subnet: 10.30.70.0/24
+      range_start: 10.30.70.100
+      range_end: 10.30.70.200
+      gateway: 10.30.70.1
+      description: "HCM TECHNICAL"
+    - vlan: 280
+      subnet: 10.30.80.0/24
+      range_start: 10.30.80.100
+      range_end: 10.30.80.200
+      gateway: 10.30.80.1
+      description: "HCM IT"
+
+# ──────────────────────────────────────────────────────────
+# DNS Server — DC-DNS01 (10.100.40.11)
+# dnsmasq chạy trong Mininet host DC-DNS01
+# Zone: enterprise.local
+# ──────────────────────────────────────────────────────────
+dns:
+  server_host: DC-DNS01
+  server_ip: 10.100.40.11
+  zone: enterprise.local
+  upstream_dns: 8.8.8.8    # forward external queries (nếu có internet)
+  cache_size: 1000
+
+  # A Records
+  records:
+    - fqdn: www.enterprise.local
+      ip: 10.100.10.11
+      alias: DC-WEB01
+    - fqdn: www2.enterprise.local
+      ip: 10.100.10.12
+      alias: DC-WEB02
+    - fqdn: app.enterprise.local
+      ip: 10.100.20.11
+      alias: DC-APP01
+    - fqdn: app2.enterprise.local
+      ip: 10.100.20.12
+      alias: DC-APP02
+    - fqdn: db.enterprise.local
+      ip: 10.100.30.11
+      alias: DC-DB01
+    - fqdn: db2.enterprise.local
+      ip: 10.100.30.12
+      alias: DC-DB02
+    - fqdn: dns.enterprise.local
+      ip: 10.100.40.11
+      alias: DC-DNS01
+    - fqdn: dhcp.enterprise.local
+      ip: 10.100.40.12
+      alias: DC-DHCP01
+    - fqdn: dhcp2.enterprise.local
+      ip: 10.100.40.13
+      alias: DC-DHCP02
+    - fqdn: monitor.enterprise.local
+      ip: 10.100.50.11
+      alias: DC-MON01
+    - fqdn: mgmt.enterprise.local
+      ip: 10.100.60.11
+      alias: DC-MGMT01
+    - fqdn: sip.enterprise.local
+      ip: 10.100.20.11
+      alias: DC-APP01
+      description: "SIP server (APP01 đảm nhận VoIP)"
+    - fqdn: noc.enterprise.local
+      ip: 127.0.0.1
+      description: "NOC Dashboard (chạy local)"
+
+# ──────────────────────────────────────────────────────────
+# NTP Server — DC-MGMT01 (10.100.60.11)
+# chrony chạy trong Mininet host DC-MGMT01
+# ──────────────────────────────────────────────────────────
+ntp:
+  server_host: DC-MGMT01
+  server_ip: 10.100.60.11
+  stratum: 2
+  upstream_ntp:
+    - 0.pool.ntp.org
+    - 1.pool.ntp.org
+  allowed_networks:
+    - 10.10.0.0/16    # BL
+    - 10.20.0.0/16    # NT
+    - 10.30.0.0/16    # HCM
+    - 10.100.0.0/16   # DC
+  clients:
+    - site: baoloc
+      hosts: [BL-GW]
+    - site: nhatrang
+      hosts: [NT-DIST01, NT-DIST02]
+    - site: hcm
+      hosts: [HCM-DIST01, HCM-DIST02]
