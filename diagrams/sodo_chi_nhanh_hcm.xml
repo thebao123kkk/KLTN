@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- TITLE -->
+    <mxCell id="title" value="SƠ ĐỒ MẠNG CHI NHÁNH HỒ CHÍ MINH (HCM) — 3-TIER ARCHITECTURE&#xa;Dải IP: 10.30.0.0/16 | VRRP + OSPF + RSTP | Mininet + OVS + FRRouting + keepalived" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=14;fontStyle=1;fontColor=#b71c1c;" vertex="1" parent="1">
+      <mxGeometry x="100" y="20" width="1450" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- WAN -->
+    <mxCell id="wan_hcm" value="☁️ WAN (Kết nối liên chi nhánh)&#xa;→ NT via 192.168.20.2/30&#xa;→ BL via 192.168.10.2/30&#xa;→ DC via 192.168.30.1/30&#xa;OSPF Area 0 — Hub site (kết nối tất cả)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#6a1b9a;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="630" y="80" width="350" height="110" as="geometry" />
+    </mxCell>
+
+    <!-- HCM-CORE -->
+    <mxCell id="hcm_core" value="🔵 HCM-CORE&#xa;Core Switch (OVS)&#xa;STP Priority: 4096 (Root Bridge)&#xa;Trung tâm kết nối toàn bộ mạng HCM&#xa;Uplink WAN qua HCM-DIST01" style="shape=mxgraph.cisco.switches.layer_3_switch;sketch=0;html=1;pointerEvents=1;dashed=0;fillColor=#b71c1c;strokeColor=#7f0000;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;fontSize=10;fontStyle=1;fontColor=#b71c1c;" vertex="1" parent="1">
+      <mxGeometry x="735" y="260" width="100" height="100" as="geometry" />
+    </mxCell>
+
+    <!-- WAN -> HCM-CORE -->
+    <mxCell id="e_wan_core" value="Kết nối WAN&#xa;OSPF 192.168.x.0/30" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#6a1b9a;strokeWidth=2;fontSize=9;fontColor=#6a1b9a;" edge="1" parent="1" source="wan_hcm" target="hcm_core">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== HCM-DIST01 (VRRP MASTER) ===== -->
+    <mxCell id="hcm_dist01" value="🟢 HCM-DIST01&#xa;Distribution Switch (OVS + FRR)&#xa;VRRP: MASTER (Priority 110)&#xa;Router-ID: 10.30.10.2&#xa;VIP: 10.30.x.1 (tất cả VLAN)&#xa;Interface: 10.30.10.2/24&#xa;OSPF Area 0&#xa;keepalived (advert_int=1s, preempt=true)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=3;fontSize=9;fontStyle=1;fontColor=#1b5e20;" vertex="1" parent="1">
+      <mxGeometry x="290" y="440" width="260" height="140" as="geometry" />
+    </mxCell>
+
+    <!-- ===== HCM-DIST02 (VRRP BACKUP) ===== -->
+    <mxCell id="hcm_dist02" value="🟡 HCM-DIST02&#xa;Distribution Switch (OVS + FRR)&#xa;VRRP: BACKUP (Priority 100)&#xa;Router-ID: 10.30.10.3&#xa;VIP: 10.30.x.1 (tất cả VLAN)&#xa;Interface: 10.30.10.3/24&#xa;OSPF Area 0&#xa;keepalived (advert_int=1s, preempt=true)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#f57f17;strokeWidth=3;fontSize=9;fontStyle=1;fontColor=#e65100;" vertex="1" parent="1">
+      <mxGeometry x="1020" y="440" width="260" height="140" as="geometry" />
+    </mxCell>
+
+    <!-- VRRP link -->
+    <mxCell id="e_vrrp" value="VRRP Heartbeat&#xa;(advert_int=1s)&#xa;Failover &lt;5s" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#e53935;strokeWidth=3;fontSize=10;fontColor=#e53935;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="hcm_dist01" target="hcm_dist02">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="550" y="510" />
+          <mxPoint x="550" y="400" />
+          <mxPoint x="1020" y="400" />
+          <mxPoint x="1020" y="510" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- HCM-CORE -> DIST01 -->
+    <mxCell id="e_core_d1" value="Trunk (Tất cả VLAN)&#xa;10G Uplink" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b71c1c;strokeWidth=3;fontSize=9;fontColor=#b71c1c;" edge="1" parent="1" source="hcm_core" target="hcm_dist01">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <!-- HCM-CORE -> DIST02 -->
+    <mxCell id="e_core_d2" value="Trunk (Tất cả VLAN)&#xa;10G Uplink" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b71c1c;strokeWidth=3;fontSize=9;fontColor=#b71c1c;" edge="1" parent="1" source="hcm_core" target="hcm_dist02">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== ACCESS SWITCHES — DIST01 side ===== -->
+    <!-- HCM-ACC01 Admin -->
+    <mxCell id="hcm_acc01" value="HCM-ACC01&#xa;VLAN 210&#xa;ADMIN" style="shape=mxgraph.cisco.switches.workgroup_switch;sketch=0;html=1;fillColor=#546e7a;strokeColor=#37474f;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;fontSize=8;fontStyle=1;fontColor=#546e7a;" vertex="1" parent="1">
+      <mxGeometry x="40" y="660" width="55" height="55" as="geometry" />
+    </mxCell>
+    <!-- HCM-ACC02 Sales -->
+    <mxCell id="hcm_acc02" value="HCM-ACC02&#xa;VLAN 220&#xa;SALES" style="shape=mxgraph.cisco.switches.workgroup_switch;sketch=0;html=1;fillColor=#546e7a;strokeColor=#37474f;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;fontSize=8;fontStyle=1;fontColor=#546e7a;" vertex="1" parent="1">
+      <mxGeometry x="150" y="660" width="55" height="55" as="geometry" />
+    </mxCell>
+    <!-- HCM-ACC03 Accounting -->
+    <mxCell id="hcm_acc03" value="HCM-ACC03&#xa;VLAN 230&#xa;ACCOUNTING" style="shape=mxgraph.cisco.switches.workgroup_switch;sketch=0;html=1;fillColor=#546e7a;strokeColor=#37474f;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;fontSize=8;fontStyle=1;fontColor=#546e7a;" vertex="1" parent="1">
+      <mxGeometry x="260" y="660" width="55" height="55" as="geometry" />
+    </mxCell>
+    <!-- HCM-ACC04 HR -->
+    <mxCell id="hcm_acc04" value="HCM-ACC04&#xa;VLAN 240&#xa;HR" style="shape=mxgraph.cisco.switches.workgroup_switch;sketch=0;html=1;fillColor=#546e7a;strokeColor=#37474f;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;fontSize=8;fontStyle=1;fontColor=#546e7a;" vertex="1" parent="1">
+      <mxGeometry x="1100" y="660" width="55" height="55" as="geometry" />
+    </mxCell>
+    <!-- HCM-ACC05 Marketing + Customer -->
+    <mxCell id="hcm_acc05" value="HCM-ACC05&#xa;VLAN 250,260&#xa;MARKETING+CUS" style="shape=mxgraph.cisco.switches.workgroup_switch;sketch=0;html=1;fillColor=#546e7a;strokeColor=#37474f;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;fontSize=8;fontStyle=1;fontColor=#546e7a;" vertex="1" parent="1">
+      <mxGeometry x="1210" y="660" width="65" height="55" as="geometry" />
+    </mxCell>
+    <!-- HCM-ACC06 Technical+IT+IoT+CCTV+WiFi+Voice -->
+    <mxCell id="hcm_acc06" value="HCM-ACC06&#xa;VLAN 270,280&#xa;290,295,296&#xa;297,299&#xa;TECH+IT+IoT+.." style="shape=mxgraph.cisco.switches.workgroup_switch;sketch=0;html=1;fillColor=#546e7a;strokeColor=#37474f;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;fontSize=8;fontStyle=1;fontColor=#546e7a;" vertex="1" parent="1">
+      <mxGeometry x="1370" y="660" width="65" height="65" as="geometry" />
+    </mxCell>
+
+    <!-- DIST01 -> ACC01,02,03 -->
+    <mxCell id="e_d1_a1" value="VLAN 210" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2e7d32;strokeWidth=1;fontSize=8;" edge="1" parent="1" source="hcm_dist01" target="hcm_acc01"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e_d1_a2" value="VLAN 220" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2e7d32;strokeWidth=1;fontSize=8;" edge="1" parent="1" source="hcm_dist01" target="hcm_acc02"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e_d1_a3" value="VLAN 230" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2e7d32;strokeWidth=1;fontSize=8;" edge="1" parent="1" source="hcm_dist01" target="hcm_acc03"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <!-- DIST02 -> ACC04,05,06 -->
+    <mxCell id="e_d2_a4" value="VLAN 240" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#f57f17;strokeWidth=1;fontSize=8;" edge="1" parent="1" source="hcm_dist02" target="hcm_acc04"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e_d2_a5" value="VLAN 250,260" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#f57f17;strokeWidth=1;fontSize=8;" edge="1" parent="1" source="hcm_dist02" target="hcm_acc05"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e_d2_a6" value="VLAN 270-299" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#f57f17;strokeWidth=1;fontSize=8;" edge="1" parent="1" source="hcm_dist02" target="hcm_acc06"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <!-- ===== ENDPOINT HOSTS (compact) ===== -->
+    <mxCell id="hcm_admin_h" value="💻 HCM-ADMIN-PC01  10.30.10.11&#xa;💻 HCM-ADMIN-PC02  10.30.10.12&#xa;💻 HCM-ADMIN-PC03  10.30.10.13&#xa;GW: 10.30.10.1 (VRRP VIP)" style="text;html=1;strokeColor=#1565c0;fillColor=#e3f2fd;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=7.5;rounded=1;" vertex="1" parent="1"><mxGeometry x="10" y="780" width="190" height="75" as="geometry" /></mxCell>
+    <mxCell edge="1" parent="1" source="hcm_acc01" target="hcm_admin_h"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="hcm_sales_h" value="💻 HCM-SALES-PC01  10.30.20.11&#xa;💻 HCM-SALES-PC02  10.30.20.12&#xa;💻 HCM-SALES-PC03  10.30.20.13&#xa;GW: 10.30.20.1 (VRRP VIP)" style="text;html=1;strokeColor=#1565c0;fillColor=#e3f2fd;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=7.5;rounded=1;" vertex="1" parent="1"><mxGeometry x="120" y="780" width="190" height="75" as="geometry" /></mxCell>
+    <mxCell edge="1" parent="1" source="hcm_acc02" target="hcm_sales_h"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="hcm_acc_h" value="💻 HCM-ACC-PC01  10.30.30.11&#xa;💻 HCM-ACC-PC02  10.30.30.12&#xa;💻 HCM-ACC-PC03  10.30.30.13&#xa;GW: 10.30.30.1 (VRRP VIP)" style="text;html=1;strokeColor=#1565c0;fillColor=#e3f2fd;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=7.5;rounded=1;" vertex="1" parent="1"><mxGeometry x="235" y="780" width="190" height="75" as="geometry" /></mxCell>
+    <mxCell edge="1" parent="1" source="hcm_acc03" target="hcm_acc_h"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="hcm_hr_h" value="💻 HCM-HR-PC01  10.30.40.11&#xa;💻 HCM-HR-PC02  10.30.40.12&#xa;💻 HCM-HR-PC03  10.30.40.13&#xa;GW: 10.30.40.1 (VRRP VIP)" style="text;html=1;strokeColor=#1565c0;fillColor=#e3f2fd;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=7.5;rounded=1;" vertex="1" parent="1"><mxGeometry x="1070" y="780" width="190" height="75" as="geometry" /></mxCell>
+    <mxCell edge="1" parent="1" source="hcm_acc04" target="hcm_hr_h"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="hcm_mkt_h" value="💻 HCM-MKT-PC01..03  10.30.50.11-13&#xa;💻 HCM-CUS-PC01..03  10.30.60.11-13&#xa;GW: 10.30.50.1 / 10.30.60.1 (VRRP VIP)" style="text;html=1;strokeColor=#1565c0;fillColor=#e3f2fd;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=7.5;rounded=1;" vertex="1" parent="1"><mxGeometry x="1180" y="780" width="220" height="75" as="geometry" /></mxCell>
+    <mxCell edge="1" parent="1" source="hcm_acc05" target="hcm_mkt_h"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="hcm_it_h" value="💻 HCM-TECH-PC01..03  10.30.70.11-13&#xa;💻 HCM-IT-PC01..03    10.30.80.11-13&#xa;🖨️ HCM-PRN01..03     10.30.90.x&#xa;📷 HCM-CAM01..04     10.30.95.x&#xa;📶 HCM-AP01..02      10.30.96.x&#xa;📞 HCM-PHONE01..02   10.30.97.x" style="text;html=1;strokeColor=#546e7a;fillColor=#eceff1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=7.5;rounded=1;" vertex="1" parent="1"><mxGeometry x="1350" y="780" width="230" height="115" as="geometry" /></mxCell>
+    <mxCell edge="1" parent="1" source="hcm_acc06" target="hcm_it_h"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <!-- ===== VLAN TABLE ===== -->
+    <mxCell id="vlan_table" value="📋 BẢNG VLAN HỒ CHÍ MINH&#xa;─────────────────────────────────────────&#xa;VLAN 210  ADMIN       10.30.10.0/24  GW:.1 ← ACC01&#xa;VLAN 220  SALES       10.30.20.0/24  GW:.1 ← ACC02&#xa;VLAN 230  ACCOUNTING  10.30.30.0/24  GW:.1 ← ACC03&#xa;VLAN 240  HR          10.30.40.0/24  GW:.1 ← ACC04&#xa;VLAN 250  MARKETING   10.30.50.0/24  GW:.1 ← ACC05&#xa;VLAN 260  CUSTOMER    10.30.60.0/24  GW:.1 ← ACC05&#xa;VLAN 270  TECHNICAL   10.30.70.0/24  GW:.1 ← ACC06&#xa;VLAN 280  IT          10.30.80.0/24  GW:.1 ← ACC06&#xa;VLAN 290  IoT         10.30.90.0/24  GW:.1 ← ACC06&#xa;VLAN 295  CCTV        10.30.95.0/24  GW:.1 ← ACC06&#xa;VLAN 296  WiFi        10.30.96.0/24  GW:.1 ← ACC06&#xa;VLAN 297  VoIP        10.30.97.0/24  GW:.1 ← ACC06&#xa;VLAN 299  MGMT        10.30.99.0/24  GW:.1 ← DIST&#xa;─────────────────────────────────────────&#xa;Tất cả GW = VRRP VIP (10.30.x.1)" style="text;html=1;strokeColor=#b71c1c;fillColor=#ffebee;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=9;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="450" y="900" width="400" height="290" as="geometry" />
+    </mxCell>
+
+    <!-- OSPF note -->
+    <mxCell id="ospf_note" value="⚙️ OSPF Configuration — HCM (Hub site)&#xa;──────────────────────────────────────────────&#xa;HCM-DIST01 Router-ID: 10.30.10.2&#xa;HCM-DIST02 Router-ID: 10.30.10.3&#xa;Quảng bá: 10.30.0.0/16 Area 0&#xa;&#xa;WAN Links (HCM là điểm kết nối trung tâm):&#xa;→ BL via 192.168.10.2/30 (BL-GW phía bên kia)&#xa;→ NT via 192.168.20.2/30 (NT-DIST01 phía bên kia)&#xa;→ DC via 192.168.30.1/30 (DC-SPINE-GW phía bên kia)" style="text;html=1;strokeColor=#1b5e20;fillColor=#e8f5e9;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=9;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="880" y="900" width="430" height="200" as="geometry" />
+    </mxCell>
+
+    <!-- STP note -->
+    <mxCell id="stp_note" value="⚙️ STP Priority HCM&#xa;──────────────────────────&#xa;HCM-CORE:      Priority 4096  (Root Bridge)&#xa;HCM-DIST01/02: Priority 8192  (Distribution)&#xa;HCM-ACC01..06: Priority 32768 (Access)&#xa;Chuẩn: RSTP (Rapid Spanning Tree Protocol)" style="text;html=1;strokeColor=#b71c1c;fillColor=#ffebee;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=9;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="450" y="1200" width="380" height="110" as="geometry" />
+    </mxCell>
+
+    <mxCell id="dhcp_note" value="⚙️ DHCP Relay — HCM&#xa;──────────────────────────────────────────────&#xa;HCM-DIST01/02 chạy dhcrelay&#xa;→ Relay về DC-DHCP01 (10.100.40.12) [Primary]&#xa;→ Relay về DC-DHCP02 (10.100.40.13) [Standby]&#xa;Các VLAN phòng ban nhận IP tự động từ DC&#xa;Kèm: GW = VRRP VIP, DNS = 10.100.40.11, NTP = 10.100.60.11" style="text;html=1;strokeColor=#1565c0;fillColor=#e3f2fd;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=9;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="880" y="1120" width="430" height="120" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>
