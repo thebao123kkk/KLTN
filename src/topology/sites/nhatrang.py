@@ -37,16 +37,15 @@ def _load_configs():
 
 
 def _set_access_port(port_name, vlan_id):
-    os.system(f'ovs-vsctl set port {port_name} vlan-mode=access tag={vlan_id}')
+    os.system(f'ovs-vsctl set port {port_name} tag={vlan_id}')
 
 
-def _set_trunk_port(port_name, vlan_ids):
-    trunks = ','.join(str(v) for v in vlan_ids)
-    os.system(f'ovs-vsctl set port {port_name} vlan-mode=trunk trunks={trunks}')
+def _set_trunk_port(port_name, vlan_ids=None):
+    os.system(f'ovs-vsctl clear port {port_name} tag')
 
 
 def _set_stp_priority(sw_name, priority):
-    os.system(f'ovs-vsctl set bridge {sw_name} other-config:stp-priority={priority}')
+    os.system(f'ovs-vsctl set bridge {sw_name} other-config:stp-priority={priority} other-config:stp-forward-delay=2 2>/dev/null')
 
 
 # Access switch VLAN assignment (từ CT.md section 4)
@@ -95,9 +94,9 @@ def build_nhatrang(net):
     core = net.addSwitch('NT_CORE', cls=OVSSwitch, failMode='standalone', stp=True, dpid='0000000000000002')
     nodes['core'] = core
 
-    # ── Distribution switches (chạy FRR OSPF + keepalived VRRP) ────────────────────────────
-    dist1 = net.addSwitch('NT_DIST01', cls=OVSSwitch, failMode='standalone', stp=True, dpid='0000000000000010')
-    dist2 = net.addSwitch('NT_DIST02', cls=OVSSwitch, failMode='standalone', stp=True, dpid='0000000000000011')
+    # ── Distribution routers (chạy FRR OSPF + keepalived VRRP) ────────────────────────────
+    dist1 = net.addHost('NT_DIST01', ip=None)
+    dist2 = net.addHost('NT_DIST02', ip=None)
     nodes['dist'] = {'NT_DIST01': dist1, 'NT_DIST02': dist2}
 
     # Kết nối DIST → CORE (uplink trunk)
@@ -166,8 +165,6 @@ def configure_nhatrang(nt_nodes):
 
     # STP priorities
     _set_stp_priority('NT_CORE', 4096)           # Root bridge
-    _set_stp_priority('NT_DIST01', 8192)
-    _set_stp_priority('NT_DIST02', 8192)
     for acc_name in ACC_VLANS:
         acc_name_underscore = acc_name.replace('-', '_')
         _set_stp_priority(acc_name_underscore, 32768)
@@ -201,28 +198,47 @@ def configure_nhatrang(nt_nodes):
 
 def _configure_dist_interfaces(dist_host, dist_name, vlan_cfg):
     """
-    Tạo sub-interfaces VLAN trên DIST host.
+    Tạo Linux bridge 'br0' (VLAN-aware) gộp tất cả LAN interfaces của DIST host,
+    sau đó tạo sub-interfaces VLAN br0.VLAN với IP gateway.
     DIST01 dùng .2 (primary), DIST02 dùng .3 (backup) theo VRRP config.
     """
     is_dist1 = '01' in dist_name
-    base_intf = f'{dist_name}-eth0'
     nt_vlans = vlan_cfg['nhatrang']['vlans']
 
     dist_host.cmd('sysctl -w net.ipv4.ip_forward=1')
 
+    # Lấy tất cả LAN interfaces (trừ lo và WAN links)
+    lan_intfs = [intf.name for intf in dist_host.intfList() if intf.name != 'lo' and '_w' not in intf.name]
+    for intf_name in lan_intfs:
+        dist_host.cmd(f'ip link set {intf_name} up')
+
+    # Tạo Linux bridge br0 gộp các LAN interfaces với VLAN filtering
+    dist_host.cmd('ip link add name br0 type bridge 2>/dev/null')
+    dist_host.cmd('ip link set dev br0 type bridge vlan_filtering 1 2>/dev/null')
+    dist_host.cmd('bridge vlan add dev br0 vid 2-4094 self 2>/dev/null')
+    for intf_name in lan_intfs:
+        dist_host.cmd(f'ip link set {intf_name} master br0 2>/dev/null')
+        dist_host.cmd(f'bridge vlan add dev {intf_name} vid 2-4094 2>/dev/null')
+    dist_host.cmd('ip link set br0 up')
+
     for vlan_id, vinfo in nt_vlans.items():
-        sub_intf = f'{base_intf}.{vlan_id}'
+        sub_intf = f'br0.{vlan_id}'
         subnet = vinfo['subnet']
         prefix = subnet.split('/')[1]
-        # DIST01 → .2, DIST02 → .3 (VIP .1 từ keepalived)
+        # DIST01 → .2, DIST02 → .3 (VIP .1 từ keepalived/primary)
         octet = '2' if is_dist1 else '3'
         ip_addr = vinfo['gateway'].rsplit('.', 1)[0] + f'.{octet}'
+        gw_vip = vinfo['gateway']
 
-        dist_host.cmd(f'ip link add link {base_intf} name {sub_intf} type vlan id {vlan_id}')
-        dist_host.cmd(f'ip addr add {ip_addr}/{prefix} dev {sub_intf}')
+        dist_host.cmd(f'ip link add link br0 name {sub_intf} type vlan id {vlan_id} 2>/dev/null')
+        dist_host.cmd(f'ip addr add {ip_addr}/{prefix} dev {sub_intf} 2>/dev/null')
+        if is_dist1:
+            dist_host.cmd(f'ip addr add {gw_vip}/{prefix} dev {sub_intf} 2>/dev/null')
         dist_host.cmd(f'ip link set {sub_intf} up')
 
-    print(f'  [{dist_name}] Sub-interfaces configured')
+    print(f'  [{dist_name}] Sub-interfaces configured on br0')
+
+
 
 
 def start_vrrp_nhatrang(nt_nodes):
@@ -233,6 +249,13 @@ def start_vrrp_nhatrang(nt_nodes):
     """
     dist1 = nt_nodes['dist']['NT_DIST01']
     dist2 = nt_nodes['dist']['NT_DIST02']
+
+    if not os.path.exists('/tmp/keepalived_NT_DIST01.conf'):
+        try:
+            from scripts.generate_keepalived_conf import main as gen_ka
+            gen_ka()
+        except Exception:
+            pass
 
     dist1.cmd('keepalived -f /tmp/keepalived_NT_DIST01.conf -p /tmp/ka_dist01.pid')
     dist2.cmd('keepalived -f /tmp/keepalived_NT_DIST02.conf -p /tmp/ka_dist02.pid')
@@ -245,7 +268,8 @@ def start_frr_nhatrang(nt_nodes):
     """
     for dist_name, dist_host in nt_nodes['dist'].items():
         router_id = '10.20.10.2' if '01' in dist_name else '10.20.10.3'
-        dist_host.cmd('service frr start')
+        dist_host.cmd('/usr/lib/frr/zebra -d 2>/dev/null || /usr/libexec/frr/zebra -d 2>/dev/null || service frr start')
+        dist_host.cmd('/usr/lib/frr/ospfd -d 2>/dev/null || /usr/libexec/frr/ospfd -d 2>/dev/null')
         dist_host.cmd(
             f'vtysh -c "configure terminal" '
             f'-c "router ospf" '
@@ -255,3 +279,4 @@ def start_frr_nhatrang(nt_nodes):
             f'-c "exit" -c "exit"'
         )
         print(f'  [{dist_name}] FRR OSPF started, router-id={router_id}')
+

@@ -3,9 +3,9 @@ tests/phase_checks/check_phase6.py
 CHECKPOINT PHASE 6 — DHCP + DNS + NTP Services
 =============================================
 Kiểm tra:
-  1. DHCP: Một host mới nhận IP từ DC-DHCP01
+  1. DHCP: Một host mới nhận IP từ DC_DHCP01
   2. DNS:  Resolve enterprise.local domains
-  3. NTP:  DC-MGMT01 đang sync time
+  3. NTP:  DC_MGMT01 đang sync time
 
 Cách chạy:
   sudo python3 tests/phase_checks/check_phase6.py
@@ -28,8 +28,8 @@ def run_check(topo):
     info('=' * 60 + '\n')
 
     # ── Test 1: DHCP ──────────────────────────────────────
-    info('\n[TEST 1] DHCP — host lấy IP từ DC-DHCP01...\n')
-    dhcp_host = net.get('DC-DHCP01')
+    info('\n[TEST 1] DHCP — host lấy IP từ DC_DHCP01...\n')
+    dhcp_host = net.get('DC_DHCP01')
     
     if dhcp_host:
         # Kiểm tra dnsmasq DHCP đang chạy
@@ -43,10 +43,10 @@ def run_check(topo):
 
         # Test DHCP bằng cách dùng 1 host không có static IP (nếu có)
         # Hoặc dùng dhclient trên host có VLAN
-        # Dùng NT-ADMIN-PC01 thử dhclient (sẽ nhận IP từ pool)
-        test_host = net.get('NT-ADMIN-PC01')
+        # Dùng NT_ADM01 thử dhclient (sẽ nhận IP từ pool)
+        test_host = net.get('NT_ADM01')
         if test_host:
-            info(f'  → Thử DHCP discover từ NT-ADMIN-PC01...\n')
+            info(f'  → Thử DHCP discover từ NT_ADM01...\n')
             # Xóa IP hiện tại và request DHCP
             intf = test_host.defaultIntf().name
             test_host.cmd(f'dhclient -r {intf} 2>/dev/null')
@@ -59,19 +59,19 @@ def run_check(topo):
             if new_ip and '10.20.10.' in new_ip:
                 pool_octet = int(new_ip.split('.')[3].split('/')[0])
                 if 100 <= pool_octet <= 200:
-                    info(f'  ✓ DHCP: NT-ADMIN-PC01 nhận IP {new_ip} từ pool (100-200)\n')
+                    info(f'  ✓ DHCP: NT_ADM01 nhận IP {new_ip} từ pool (100-200)\n')
                     results.append(True)
                 else:
                     info(f'  ⚠ DHCP: IP {new_ip} ngoài pool expected range (có thể dùng static IP)\n')
             else:
                 info(f'  ⚠ DHCP discover timeout (bình thường nếu relay chưa config xong)\n')
     else:
-        error('  ✗ DC-DHCP01 không tìm thấy\n')
+        error('  ✗ DC_DHCP01 không tìm thấy\n')
         results.append(False)
 
     # ── Test 2: DNS ───────────────────────────────────────
     info('\n[TEST 2] DNS — Resolve enterprise.local...\n')
-    dns_host = net.get('DC-DNS01')
+    dns_host = net.get('DC_DNS01')
 
     if dns_host:
         pid = dns_host.cmd('cat /tmp/dnsmasq_dns.pid 2>/dev/null').strip()
@@ -82,7 +82,7 @@ def run_check(topo):
             error(f'  ✗ dnsmasq DNS không chạy\n')
             results.append(False)
 
-        # DNS resolve tests từ DC-DNS01 host
+        # DNS resolve tests từ DC_DNS01 host
         dns_records = [
             ('www.enterprise.local',     '10.100.10.11'),
             ('app.enterprise.local',     '10.100.20.11'),
@@ -100,9 +100,9 @@ def run_check(topo):
                 results.append(False)
 
         # DNS từ remote host (HCM → DNS server)
-        hcm_host = net.get('HCM-ADMIN-PC01')
+        hcm_host = net.get('HCM_ADM01')
         if hcm_host:
-            info(f'  → DNS query từ HCM-ADMIN-PC01...\n')
+            info(f'  → DNS query từ HCM_ADM01...\n')
             result = hcm_host.cmd(f'nslookup www.enterprise.local {dns_ip} 2>/dev/null')
             if '10.100.10.11' in result:
                 info(f'  ✓ HCM host resolve www.enterprise.local thành công\n')
@@ -111,12 +111,12 @@ def run_check(topo):
                 error(f'  ✗ HCM host không resolve được www.enterprise.local\n')
                 results.append(False)
     else:
-        error('  ✗ DC-DNS01 không tìm thấy\n')
+        error('  ✗ DC_DNS01 không tìm thấy\n')
         results.append(False)
 
     # ── Test 3: NTP ───────────────────────────────────────
-    info('\n[TEST 3] NTP — DC-MGMT01 đang chạy chrony...\n')
-    ntp_host = net.get('DC-MGMT01')
+    info('\n[TEST 3] NTP — DC_MGMT01 đang chạy chrony...\n')
+    ntp_host = net.get('DC_MGMT01')
 
     if ntp_host:
         # Kiểm tra chrony đang chạy
@@ -127,22 +127,22 @@ def run_check(topo):
             info(f'  ✓ chrony NTP running (PID: {pid_check})\n')
             results.append(True)
         else:
-            error(f'  ✗ chrony không chạy trên DC-MGMT01\n')
+            error(f'  ✗ chrony không chạy trên DC_MGMT01\n')
             results.append(False)
 
-        # NTP client test từ NT-DIST01
-        nt_dist1 = net.get('NT-DIST01')
+        # NTP client test từ NT_DIST01
+        nt_dist1 = net.get('NT_DIST01')
         if nt_dist1:
-            info(f'  → NTP query từ NT-DIST01 đến DC-MGMT01 (10.100.60.11)...\n')
+            info(f'  → NTP query từ NT_DIST01 đến DC_MGMT01 (10.100.60.11)...\n')
             ntp_result = nt_dist1.cmd('ntpdate -q 10.100.60.11 2>&1 | head -3')
             if 'stratum' in ntp_result.lower() or 'offset' in ntp_result.lower():
-                info(f'  ✓ NT-DIST01 sync được NTP từ DC-MGMT01\n')
+                info(f'  ✓ NT_DIST01 sync được NTP từ DC_MGMT01\n')
                 results.append(True)
             else:
                 info(f'  ⚠ NTP query result: {ntp_result.strip()[:100]}\n')
                 info(f'  ⚠ NTP có thể cần upstream internet hoặc thêm thời gian sync\n')
     else:
-        error('  ✗ DC-MGMT01 không tìm thấy\n')
+        error('  ✗ DC_MGMT01 không tìm thấy\n')
         results.append(False)
 
     return _report(results)

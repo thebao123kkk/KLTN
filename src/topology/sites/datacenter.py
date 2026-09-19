@@ -39,12 +39,11 @@ def _load_configs():
 
 
 def _set_access_port(port_name, vlan_id):
-    os.system(f'ovs-vsctl set port {port_name} vlan-mode=access tag={vlan_id}')
+    os.system(f'ovs-vsctl set port {port_name} vlan_mode=access tag={vlan_id}')
 
 
-def _set_trunk_port(port_name, vlan_ids):
-    trunks = ','.join(str(v) for v in vlan_ids)
-    os.system(f'ovs-vsctl set port {port_name} vlan-mode=trunk trunks={trunks}')
+def _set_trunk_port(port_name, vlan_ids=None):
+    os.system(f'ovs-vsctl set port {port_name} vlan_mode=trunk')
 
 
 def _set_stp_priority(sw_name, priority):
@@ -180,20 +179,33 @@ def configure_datacenter(dc_nodes):
 
 
 def _configure_gw_interfaces(gw_host, dc_vlan):
-    """IP sub_interfaces trên DC_SP_GW."""
-    base_intf = 'DC_SP_GW-eth0'
+    """IP sub_interfaces trên DC_SP_GW — gộp LAN ports vào br0 (VLAN-aware)."""
     gw_host.cmd('sysctl -w net.ipv4.ip_forward=1')
 
+    # Lấy tất cả LAN interfaces (trừ lo và WAN links)
+    lan_intfs = [intf.name for intf in gw_host.intfList() if intf.name != 'lo' and '_w' not in intf.name]
+    for intf_name in lan_intfs:
+        gw_host.cmd(f'ip link set {intf_name} up')
+
+    # Tạo Linux bridge br0 gộp các LAN interfaces với VLAN filtering
+    gw_host.cmd('ip link add name br0 type bridge 2>/dev/null')
+    gw_host.cmd('ip link set dev br0 type bridge vlan_filtering 1 2>/dev/null')
+    for intf_name in lan_intfs:
+        gw_host.cmd(f'ip link set {intf_name} master br0 2>/dev/null')
+        gw_host.cmd(f'bridge vlan add dev {intf_name} vid 2-4094 2>/dev/null')
+    gw_host.cmd('ip link set br0 up')
+
     for vlan_id, vinfo in dc_vlan['vlans'].items():
-        sub_intf = f'{base_intf}.{vlan_id}'
+        sub_intf = f'br0.{vlan_id}'
         gw_ip = vinfo['gateway']
         prefix = vinfo['subnet'].split('/')[1]
 
-        gw_host.cmd(f'ip link add link {base_intf} name {sub_intf} type vlan id {vlan_id}')
-        gw_host.cmd(f'ip addr add {gw_ip}/{prefix} dev {sub_intf}')
+        gw_host.cmd(f'ip link add link br0 name {sub_intf} type vlan id {vlan_id} 2>/dev/null')
+        gw_host.cmd(f'ip addr add {gw_ip}/{prefix} dev {sub_intf} 2>/dev/null')
         gw_host.cmd(f'ip link set {sub_intf} up')
 
-    print('  [DC_SPINE_GW] Sub_interfaces configured')
+    print('  [DC_SPINE_GW] Sub-interfaces configured on br0')
+
 
 
 def start_services_datacenter(dc_nodes):
@@ -240,7 +252,8 @@ def start_services_datacenter(dc_nodes):
 def start_frr_datacenter(dc_nodes):
     """Khởi động FRR OSPF trên DC_SPINE_GW."""
     gw = dc_nodes['gw']
-    gw.cmd('service frr start')
+    gw.cmd('/usr/lib/frr/zebra -d 2>/dev/null || /usr/libexec/frr/zebra -d 2>/dev/null || service frr start')
+    gw.cmd('/usr/lib/frr/ospfd -d 2>/dev/null || /usr/libexec/frr/ospfd -d 2>/dev/null')
     gw.cmd(
         'vtysh -c "configure terminal" '
         '-c "router ospf" '
@@ -250,3 +263,4 @@ def start_frr_datacenter(dc_nodes):
         '-c "exit" -c "exit"'
     )
     print('[DC_SPINE_GW] FRR OSPF started')
+

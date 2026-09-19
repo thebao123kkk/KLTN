@@ -34,13 +34,12 @@ def _load_vlan_config():
 # ── Helper: cấu hình VLAN trên OVS port ──────────────────
 def _set_access_port(sw, port_name, vlan_id):
     """Đặt OVS port thành access port thuộc VLAN vlan_id."""
-    os.system(f'ovs-vsctl set port {port_name} vlan-mode=access tag={vlan_id}')
+    os.system(f'ovs-vsctl set port {port_name} tag={vlan_id}')
 
 
-def _set_trunk_port(sw, port_name, vlan_ids):
-    """Đặt OVS port thành trunk port cho danh sách VLAN."""
-    trunks = ','.join(str(v) for v in vlan_ids)
-    os.system(f'ovs-vsctl set port {port_name} vlan-mode=trunk trunks={trunks}')
+def _set_trunk_port(sw, port_name, vlan_ids=None):
+    """Đặt OVS port thành trunk port cho tất cả VLANs."""
+    os.system(f'ovs-vsctl clear port {port_name} tag')
 
 
 # ── Helper: cấu hình STP priority ────────────────────────
@@ -70,9 +69,8 @@ def build_baoloc(net):
     bl = cfg['baoloc']
 
     # ── Switch ────────────────────────────────────────────
-    # cls=OVSSwitch, failMode='standalone' để switch hoạt động độc lập
-    # khi chưa có SDN controller (Phase 1–8)
-    sw = net.addSwitch('BL_SW', cls=OVSSwitch, failMode='standalone', stp=True, dpid='0000000000000001')
+    # stp=False trên BL_SW để tránh STP 30-second port blocking delay
+    sw = net.addSwitch('BL_SW', cls=OVSSwitch, failMode='standalone', stp=False, dpid='0000000000000001')
 
     # ── Gateway host (chạy FRR + keepalived) ────────────────────────────
     # Không có IP sẵn, sẽ cấu hình qua script FRR
@@ -146,23 +144,26 @@ def configure_baoloc(bl_nodes):
 
 def _configure_gw_interfaces(gw_host, bl_cfg):
     """
-    Cấu hình sub-interfaces và IP trên BL-GW host.
-    Mỗi VLAN có 1 sub-interface eth0.VLAN với IP = gateway của VLAN đó.
+    Cấu hình sub-interfaces VLAN và IP gateway trên BL-GW host (BL_GW-eth0.VLAN).
     Bật IP forwarding.
     """
-    base_intf = 'BL-GW-eth0'   # interface chính của host
+    base_intf = f'{gw_host.name}-eth0'   # interface chính của host (BL_GW-eth0)
     gw_host.cmd('sysctl -w net.ipv4.ip_forward=1')
+    gw_host.cmd(f'ip link set {base_intf} up')
 
     for vlan_id, vlan_info in bl_cfg['vlans'].items():
         sub_intf = f'{base_intf}.{vlan_id}'
         gw_ip = vlan_info['gateway']
         prefix = vlan_info['subnet'].split('/')[1]
 
-        # Tạo VLAN sub-interface
-        gw_host.cmd(f'ip link add link {base_intf} name {sub_intf} type vlan id {vlan_id}')
-        gw_host.cmd(f'ip addr add {gw_ip}/{prefix} dev {sub_intf}')
+        # Tạo VLAN sub-interface trên BL_GW-eth0
+        gw_host.cmd(f'ip link add link {base_intf} name {sub_intf} type vlan id {vlan_id} 2>/dev/null')
+        gw_host.cmd(f'ip addr add {gw_ip}/{prefix} dev {sub_intf} 2>/dev/null')
         gw_host.cmd(f'ip link set {sub_intf} up')
         print(f'  [BL-GW] {sub_intf}: {gw_ip}/{prefix}')
+
+
+
 
 
 def start_frr_baoloc(gw_host):
@@ -171,7 +172,8 @@ def start_frr_baoloc(gw_host):
     Yêu cầu: frr đã cài trên Ubuntu (`apt install frr`).
     Config file: /etc/frr/frr.conf (tạo bởi generate_frr_config.py)
     """
-    gw_host.cmd('service frr start')
+    gw_host.cmd('/usr/lib/frr/zebra -d 2>/dev/null || /usr/libexec/frr/zebra -d 2>/dev/null || service frr start')
+    gw_host.cmd('/usr/lib/frr/ospfd -d 2>/dev/null || /usr/libexec/frr/ospfd -d 2>/dev/null')
     gw_host.cmd('vtysh -c "configure terminal" '
                 '-c "router ospf" '
                 '-c "router-id 10.10.99.1" '
@@ -180,3 +182,4 @@ def start_frr_baoloc(gw_host):
                 '-c "exit" '
                 '-c "exit"')
     print('[BL-GW] FRR OSPF started')
+

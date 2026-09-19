@@ -49,11 +49,11 @@ def run_check(topo):
     info('\n[TEST 1] Inter-VLAN routing trong cùng site...\n')
     inter_vlan_tests = [
         # BL: VLAN 10 → VLAN 30
-        ('BL-ADMIN-PC01', '10.10.30.11', 'BL: VLAN10 → IoT VLAN30'),
+        ('BL_ADM01', '10.10.30.11', 'BL: VLAN10 → IoT VLAN30'),
         # NT: VLAN 110 ADMIN → VLAN 120 SALES
-        ('NT-ADMIN-PC01', '10.20.20.11', 'NT: ADMIN → SALES'),
+        ('NT_ADM01', '10.20.20.11', 'NT: ADMIN → SALES'),
         # HCM: VLAN 210 → VLAN 220
-        ('HCM-ADMIN-PC01', '10.30.20.11', 'HCM: ADMIN → SALES'),
+        ('HCM_ADM01', '10.30.20.11', 'HCM: ADMIN → SALES'),
     ]
     for src_name, dst_ip, desc in inter_vlan_tests:
         ok, rtt = _ping(net, src_name, dst_ip)
@@ -71,15 +71,15 @@ def run_check(topo):
     info('\n[TEST 2] Inter-site routing (BL ↔ HCM ↔ NT ↔ DC)...\n')
     inter_site_tests = [
         # BL → DC Web server
-        ('BL-ADMIN-PC01', '10.100.10.11', 'BL → DC-WEB01'),
+        ('BL_ADM01', '10.100.10.11', 'BL → DC_WEB01'),
         # NT → DC App server
-        ('NT-SALES-PC01',  '10.100.20.11', 'NT → DC-APP01'),
+        ('NT_SAL01',  '10.100.20.11', 'NT → DC_APP01'),
         # HCM → DC DB
-        ('HCM-ADMIN-PC01', '10.100.30.11', 'HCM → DC-DB01'),
+        ('HCM_ADM01', '10.100.30.11', 'HCM → DC_DB01'),
         # BL → NT
-        ('BL-ADMIN-PC01', '10.20.10.11', 'BL → NT-ADMIN-PC01'),
+        ('BL_ADM01', '10.20.10.11', 'BL → NT_ADM01'),
         # NT → HCM
-        ('NT-ADMIN-PC01', '10.30.10.11', 'NT → HCM-ADMIN-PC01'),
+        ('NT_ADM01', '10.30.10.11', 'NT → HCM_ADM01'),
     ]
     for src_name, dst_ip, desc in inter_site_tests:
         ok, rtt = _ping(net, src_name, dst_ip)
@@ -95,9 +95,11 @@ def run_check(topo):
 
     # ── Test 3: OSPF neighbors ────────────────────────────
     info('\n[TEST 3] Kiểm tra OSPF neighbors trên routers...\n')
-    ospf_routers = ['BL-GW', 'NT-DIST01', 'HCM-DIST01', 'DC-SPINE-GW']
+    ospf_routers = ['BL_GW', 'NT_DIST01', 'HCM_DIST01', 'DC_SP_GW']
     for rname in ospf_routers:
         router = net.get(rname)
+        if router is None and rname == 'DC_SP_GW':
+            router = net.get('DC_SPINE_GW')
         if router is None:
             info(f'  ⚠ {rname}: not found\n')
             continue
@@ -113,14 +115,14 @@ def run_check(topo):
 
     # ── Test 4: Fault test — OSPF reconvergence ───────────
     info('\n[TEST 4] Fault test — OSPF reconvergence...\n')
-    bl_gw = net.get('BL-GW')
-    hcm_d1 = net.get('HCM-DIST01')
+    bl_gw = net.get('BL_GW')
+    hcm_d1 = net.get('HCM_DIST01')
 
     if bl_gw and hcm_d1:
         # Ping baseline: BL → DC
-        ok, rtt = _ping(net, 'BL-ADMIN-PC01', '10.100.10.11')
+        ok, rtt = _ping(net, 'BL_ADM01', '10.100.10.11')
         if ok:
-            info(f'  ✓ Baseline: BL → DC-WEB01 (RTT={rtt}ms)\n')
+            info(f'  ✓ Baseline: BL → DC_WEB01 (RTT={rtt}ms)\n')
 
             # Tắt WAN link BL ↔ HCM
             wan_intf = getattr(bl_gw, 'wan_intf', None)
@@ -132,7 +134,7 @@ def run_check(topo):
                 converged = False
                 for _ in range(60):
                     time.sleep(1)
-                    ok2, _ = _ping(net, 'BL-ADMIN-PC01', '10.100.10.11', count=1)
+                    ok2, _ = _ping(net, 'BL_ADM01', '10.100.10.11', count=1)
                     if ok2:
                         converge_time = time.time() - start
                         info(f'  ✓ OSPF reconverged sau {converge_time:.1f}s\n')
@@ -148,7 +150,7 @@ def run_check(topo):
                 bl_gw.cmd(f'ip link set {wan_intf} up')
                 info(f'  → Khôi phục {wan_intf}\n')
     else:
-        info('  ⚠ BL-GW hoặc HCM-DIST01 không tìm thấy, skip fault test\n')
+        info('  ⚠ BL_GW hoặc HCM_DIST01 không tìm thấy, skip fault test\n')
 
     return _report(results)
 

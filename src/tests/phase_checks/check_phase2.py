@@ -51,17 +51,17 @@ def run_check(topo):
     info('\n[TEST 1] Hosts cùng VLAN phải ping được nhau...\n')
     same_vlan_tests = [
         # BL VLAN 10
-        ('BL-ADMIN-PC01', '10.10.10.12', 'BL VLAN10 same-vlan'),
-        ('BL-SALES-PC01',  '10.10.10.21', 'BL VLAN10 same-vlan'),
+        ('BL_ADM01', '10.10.10.12', 'BL VLAN10 same-vlan'),
+        ('BL_SAL01', '10.10.10.22', 'BL VLAN10 same-vlan'),
         # NT
-        ('NT-ADMIN-PC01', '10.20.10.12', 'NT VLAN110 same-vlan'),
-        ('NT-SALES-PC01',  '10.20.20.12', 'NT VLAN120 same-vlan'),
+        ('NT_ADM01', '10.20.10.12', 'NT VLAN110 same-vlan'),
+        ('NT_SAL01', '10.20.20.12', 'NT VLAN120 same-vlan'),
         # HCM
-        ('HCM-ADMIN-PC01', '10.30.10.12', 'HCM VLAN210 same-vlan'),
-        ('HCM-SALES-PC01',  '10.30.20.12', 'HCM VLAN220 same-vlan'),
+        ('HCM_ADM01', '10.30.10.12', 'HCM VLAN210 same-vlan'),
+        ('HCM_SAL01', '10.30.20.12', 'HCM VLAN220 same-vlan'),
         # DC
-        ('DC-WEB01', '10.100.10.12', 'DC VLAN310 same-vlan'),
-        ('DC-APP01',  '10.100.20.12', 'DC VLAN320 same-vlan'),
+        ('DC_WEB01', '10.100.10.12', 'DC VLAN310 same-vlan'),
+        ('DC_APP01', '10.100.20.12', 'DC VLAN320 same-vlan'),
     ]
     for args in same_vlan_tests:
         r = _ping_test(net, args[0], args[1], expect_success=True, desc=args[2])
@@ -72,9 +72,9 @@ def run_check(topo):
     info('\n[TEST 2] Hosts khác VLAN KHÔNG ping được (L2 isolation)...\n')
     diff_vlan_tests = [
         # BL VLAN 10 → VLAN 30 (IoT): không route vì chỉ Phase 2
-        ('BL-ADMIN-PC01', '10.10.30.11', 'BL VLAN10→VLAN30 (isolated)'),
+        ('BL_ADM01', '10.10.30.11', 'BL VLAN10→VLAN30 (isolated)'),
         # NT VLAN 110 → VLAN 120: không route vì Phase 2 chưa có OSPF
-        ('NT-ADMIN-PC01', '10.20.20.11', 'NT VLAN110→VLAN120 (isolated)'),
+        ('NT_ADM01', '10.20.20.11', 'NT VLAN110→VLAN120 (isolated)'),
     ]
     for args in diff_vlan_tests:
         r = _ping_test(net, args[0], args[1], expect_success=False, desc=args[2])
@@ -84,12 +84,12 @@ def run_check(topo):
     # ── Test 3: Kiểm tra IP đúng theo vlan.yaml ───────────
     info('\n[TEST 3] IP addresses đúng theo config...\n')
     ip_checks = {
-        'BL-ADMIN-PC01': '10.10.10.11',
-        'NT-SALES-PC01':  '10.20.20.11',
-        'HCM-SALES-PC01': '10.30.20.11',
-        'DC-WEB01':       '10.100.10.11',
-        'DC-DNS01':       '10.100.40.11',
-        'DC-DHCP01':      '10.100.40.12',
+        'BL_ADM01':  '10.10.10.11',
+        'NT_SAL01':  '10.20.20.11',
+        'HCM_SAL01': '10.30.20.11',
+        'DC_WEB01':  '10.100.10.11',
+        'DC_DNS01':  '10.100.40.11',
+        'DC_DHCP01': '10.100.40.12',
     }
     for hname, expected_ip in ip_checks.items():
         h = net.get(hname)

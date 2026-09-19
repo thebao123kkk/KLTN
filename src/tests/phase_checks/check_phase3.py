@@ -41,7 +41,7 @@ def run_check(topo):
 
     # ── Test 1: STP enabled trên tất cả switch ────────────
     info('\n[TEST 1] STP bật trên tất cả switch...\n')
-    core_switches = ['BL-SW', 'NT-CORE', 'HCM-CORE', 'DC-SPINE01']
+    core_switches = ['BL_SW', 'NT_CORE', 'HCM_CORE', 'DC_SPINE01']
     
     for sw_name in core_switches:
         sw = net.get(sw_name)
@@ -68,10 +68,10 @@ def run_check(topo):
 
     # ── Test 3: Fault test — link failure RSTP convergence ──
     info('\n[TEST 3] Fault test — RSTP convergence sau link failure...\n')
-    info('  Lấy baseline ping NT-ADMIN-PC01 → NT-ADMIN-PC02...\n')
+    info('  Lấy baseline ping NT_ADM01 → NT_ADM02...\n')
 
-    src = net.get('NT-ADMIN-PC01')
-    dst = net.get('NT-ADMIN-PC02')
+    src = net.get('NT_ADM01')
+    dst = net.get('NT_ADM02')
 
     if src and dst:
         dst_ip = dst.IP().split('/')[0]
@@ -85,10 +85,10 @@ def run_check(topo):
             results.append(False)
             return _report(results)
 
-        # Tắt uplink NT-ACC01 → NT-DIST01
+        # Tắt uplink NT_ACC01 → NT_DIST01
         # Tìm link giữa ACC01 và DIST01
-        acc01 = net.get('NT-ACC01')
-        dist1 = net.get('NT-DIST01')
+        acc01 = net.get('NT_ACC01')
+        dist1 = net.get('NT_DIST01')
         
         if acc01 and dist1:
             # Tìm interface nối ACC01 với DIST01
@@ -126,7 +126,7 @@ def run_check(topo):
                     info(f'  → Khôi phục link {intf.name}\n')
                     break
         else:
-            info('  ⚠ NT-ACC01 hoặc NT-DIST01 không tìm thấy, skip fault test\n')
+            info('  ⚠ NT_ACC01 hoặc NT_DIST01 không tìm thấy, skip fault test\n')
     else:
         info('  ⚠ NT hosts không tìm thấy, skip fault test\n')
 

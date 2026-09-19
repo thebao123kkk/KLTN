@@ -40,9 +40,8 @@ def generate_keepalived_conf(site_name, site_cfg, is_master):
         adv_int  = group.get('advert_int', 1)
         preempt  = group.get('preempt', True)
 
-        # Interface trên Mininet host = tên eth0.<vlan>
-        # Tên thật sẽ là <hostname>-eth0.<vlan> trong Mininet namespace
-        interface_name = f'eth0.{vlan_id}'
+        # Interface trên Mininet host = tên br0.<vlan> trong Mininet namespace
+        interface_name = f'br0.{vlan_id}'
 
         lines += [
             f'vrrp_instance VI_{group_id} {{',

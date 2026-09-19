@@ -37,16 +37,15 @@ def _load_configs():
 
 
 def _set_access_port(port_name, vlan_id):
-    os.system(f'ovs-vsctl set port {port_name} vlan-mode=access tag={vlan_id}')
+    os.system(f'ovs-vsctl set port {port_name} vlan_mode=access tag={vlan_id}')
 
 
-def _set_trunk_port(port_name, vlan_ids):
-    trunks = ','.join(str(v) for v in vlan_ids)
-    os.system(f'ovs-vsctl set port {port_name} vlan-mode=trunk trunks={trunks}')
+def _set_trunk_port(port_name, vlan_ids=None):
+    os.system(f'ovs-vsctl set port {port_name} vlan_mode=trunk')
 
 
 def _set_stp_priority(sw_name, priority):
-    os.system(f'ovs-vsctl set bridge {sw_name} other-config:stp-priority={priority}')
+    os.system(f'ovs-vsctl set bridge {sw_name} other-config:stp-priority={priority} other-config:stp-forward-delay=2 2>/dev/null')
 
 
 # Access switch VLAN assignment (CT.md section 7)
@@ -103,9 +102,9 @@ def build_hcm(net):
     core = net.addSwitch('HCM_CORE', cls=OVSSwitch, failMode='standalone', stp=True, dpid='0000000000000003')
     nodes['core'] = core
 
-    # ── Distribution switches ───────────────────────────────────────
-    dist1 = net.addSwitch('HCM_DIST01', cls=OVSSwitch, failMode='standalone', stp=True, dpid='0000000000000020')
-    dist2 = net.addSwitch('HCM_DIST02', cls=OVSSwitch, failMode='standalone', stp=True, dpid='0000000000000021')
+    # ── Distribution routers ───────────────────────────────────────
+    dist1 = net.addHost('HCM_DIST01', ip=None)
+    dist2 = net.addHost('HCM_DIST02', ip=None)
     nodes['dist'] = {'HCM_DIST01': dist1, 'HCM_DIST02': dist2}
 
     lk_d1 = net.addLink(dist1, core)
@@ -193,37 +192,63 @@ def configure_hcm(hcm_nodes):
         _set_access_port(h.link_intf, h_cfg['vlan'])
 
     # DIST host IP
-    _configure_dist_interfaces(dist1, 'HCM-DIST01', vlan_cfg)
+    _configure_dist_interfaces(dist1, 'HCM_DIST01', vlan_cfg)
     _configure_dist_interfaces(dist2, 'HCM_DIST02', vlan_cfg)
 
     print('[HCM] ✓ VLAN configuration done')
 
 
 def _configure_dist_interfaces(dist_host, dist_name, vlan_cfg):
-    """Sub-interfaces cho DIST host — cùng pattern với NT."""
+    """Sub-interfaces cho DIST host — gộp LAN ports vào br0 (VLAN-aware)."""
     is_dist1 = '01' in dist_name
-    base_intf = f'{dist_name}-eth0'
     hcm_vlans = vlan_cfg['hcm']['vlans']
 
     dist_host.cmd('sysctl -w net.ipv4.ip_forward=1')
 
+    # Lấy tất cả LAN interfaces (trừ lo và WAN links)
+    lan_intfs = [intf.name for intf in dist_host.intfList() if intf.name != 'lo' and '_w' not in intf.name]
+    for intf_name in lan_intfs:
+        dist_host.cmd(f'ip link set {intf_name} up')
+
+    # Tạo Linux bridge br0 gộp các LAN interfaces với VLAN filtering & STP
+    dist_host.cmd('ip link add name br0 type bridge 2>/dev/null')
+    dist_host.cmd('ip link set dev br0 type bridge vlan_filtering 1 stp_state 1 forward_delay 200 2>/dev/null')
+    dist_host.cmd('bridge vlan add dev br0 vid 2-4094 self 2>/dev/null')
+    for intf_name in lan_intfs:
+        dist_host.cmd(f'ip link set {intf_name} master br0 2>/dev/null')
+        dist_host.cmd(f'bridge vlan add dev {intf_name} vid 2-4094 2>/dev/null')
+    dist_host.cmd('ip link set br0 up')
+
     for vlan_id, vinfo in hcm_vlans.items():
-        sub_intf = f'{base_intf}.{vlan_id}'
+        sub_intf = f'br0.{vlan_id}'
         prefix = vinfo['subnet'].split('/')[1]
         octet = '2' if is_dist1 else '3'
         ip_addr = vinfo['gateway'].rsplit('.', 1)[0] + f'.{octet}'
+        gw_vip = vinfo['gateway']
 
-        dist_host.cmd(f'ip link add link {base_intf} name {sub_intf} type vlan id {vlan_id}')
-        dist_host.cmd(f'ip addr add {ip_addr}/{prefix} dev {sub_intf}')
+        dist_host.cmd(f'ip link add link br0 name {sub_intf} type vlan id {vlan_id} 2>/dev/null')
+        dist_host.cmd(f'ip addr add {ip_addr}/{prefix} dev {sub_intf} 2>/dev/null')
+        if is_dist1:
+            dist_host.cmd(f'ip addr add {gw_vip}/{prefix} dev {sub_intf} 2>/dev/null')
         dist_host.cmd(f'ip link set {sub_intf} up')
 
-    print(f'  [{dist_name}] Sub-interfaces configured')
+    print(f'  [{dist_name}] Sub-interfaces configured on br0')
+
+
 
 
 def start_vrrp_hcm(hcm_nodes):
     """Khởi động keepalived trên HCM-DIST01/02."""
     dist1 = hcm_nodes['dist']['HCM_DIST01']
     dist2 = hcm_nodes['dist']['HCM_DIST02']
+
+    if not os.path.exists('/tmp/keepalived_HCM_DIST01.conf'):
+        try:
+            from scripts.generate_keepalived_conf import main as gen_ka
+            gen_ka()
+        except Exception:
+            pass
+
     dist1.cmd('keepalived -f /tmp/keepalived_HCM_DIST01.conf -p /tmp/ka_hcm_dist01.pid')
     dist2.cmd('keepalived -f /tmp/keepalived_HCM_DIST02.conf -p /tmp/ka_hcm_dist02.pid')
     print('[HCM] keepalived VRRP started')
@@ -233,7 +258,8 @@ def start_frr_hcm(hcm_nodes):
     """Khởi động FRR OSPF trên HCM-DIST01/02."""
     for dist_name, dist_host in hcm_nodes['dist'].items():
         router_id = '10.30.10.2' if '01' in dist_name else '10.30.10.3'
-        dist_host.cmd('service frr start')
+        dist_host.cmd('/usr/lib/frr/zebra -d 2>/dev/null || /usr/libexec/frr/zebra -d 2>/dev/null || service frr start')
+        dist_host.cmd('/usr/lib/frr/ospfd -d 2>/dev/null || /usr/libexec/frr/ospfd -d 2>/dev/null')
         dist_host.cmd(
             f'vtysh -c "configure terminal" '
             f'-c "router ospf" '
@@ -245,3 +271,4 @@ def start_frr_hcm(hcm_nodes):
             f'-c "exit" -c "exit"'
         )
         print(f'  [{dist_name}] FRR OSPF started')
+

@@ -87,12 +87,12 @@ def run_check(topo):
     # ── Test 3: Ping trong cùng switch ───────────────────
     info('\n[TEST 3] Ping test trong cùng site (L2)...\n')
     
-    # Test BL: ADMIN-PC01 → ADMIN-PC02 (cùng switch, cùng VLAN)
+    # Test BL: BL_ADM01 → BL_ADM02 (cùng switch, cùng VLAN)
     test_pairs = [
-        ('BL-ADMIN-PC01', 'BL-ADMIN-PC02', 'BL same-switch'),
-        ('NT-ADMIN-PC01', 'NT-ADMIN-PC02', 'NT same-switch'),
-        ('HCM-ADMIN-PC01', 'HCM-ADMIN-PC02', 'HCM same-switch'),
-        ('DC-WEB01', 'DC-WEB02', 'DC same-leaf'),
+        ('BL_ADM01', 'BL_ADM02', 'BL same-switch'),
+        ('NT_ADM01', 'NT_ADM02', 'NT same-switch'),
+        ('HCM_ADM01', 'HCM_ADM02', 'HCM same-switch'),
+        ('DC_WEB01', 'DC_WEB02', 'DC same-leaf'),
     ]
 
     for src_name, dst_name, desc in test_pairs:

@@ -83,6 +83,9 @@ def check_environment():
         error('[PHASE 0] ✗ Môi trường thiếu dependencies. Dừng.\n')
         sys.exit(1)
 
+    # Nạp 802.1Q kernel module cho VLAN sub-interfaces
+    subprocess.run(['modprobe', '8021q'], capture_output=True)
+
     info('[PHASE 0] ✓ Môi trường OK\n')
     info('=' * 60 + '\n')
     return True
@@ -120,20 +123,16 @@ def build_network(phase: int = 6) -> EnterpriseTopo:
     """
     topo = EnterpriseTopo()
 
-    # Tạo Mininet instance
     # controller=None vì Phase 1-8 dùng OVS standalone
     # Ở Phase 14 (SDN Controller) sẽ switch sang OVSController / Ryu
     info('[NET] Khởi tạo Mininet...\n')
     topo.net = Mininet(
         switch=OVSSwitch,
-        controller=OVSController,
+        controller=None,
         link=TCLink,
         autoSetMacs=True,
         autoStaticArp=False,
     )
-
-    # Thêm controller (dummy, cho OVS standalone mode)
-    topo.net.addController('c0')
 
     # ── Phase 1: Build topology ───────────────────────────
     info('\n[PHASE 1] Xây dựng Enterprise Topology...\n')
