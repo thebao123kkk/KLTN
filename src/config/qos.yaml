@@ -1,0 +1,285 @@
+# ============================================================
+# QoS Configuration — Phase 11
+# DSCP Marking + tc HTB Queuing for WAN Links
+# ============================================================
+# Áp dụng bằng: scripts/configure_qos.py
+# Target: BL_GW, NT_DIST01, HCM_DIST01, DC_SP_GW (WAN interfaces)
+# ============================================================
+
+version: "1.0"
+
+# ============================================================
+# DSCP Traffic Classes
+# Theo topology.md Phase 11 — đã đồng bộ với acl_rules.yaml
+# ============================================================
+dscp_classes:
+  voip_rtp:
+    dscp: 46           # EF (Expedited Forwarding) — ưu tiên cao nhất
+    dscp_hex: "0xB8"   # TOS byte = 0xb8 (per topology.md)
+    description: "VoIP RTP media streams — Thoại thời gian thực"
+    match:
+      proto: udp
+      dport_range: [10000, 20000]   # RTP port range (Asterisk)
+
+  voip_sip:
+    dscp: 26           # AF31 — SIP signaling (RFC 4594 recommendation)
+    dscp_hex: "0x1A"
+    description: "VoIP SIP signaling — Tín hiệu điều khiển cuộc gọi"
+    match:
+      proto: [tcp, udp]
+      dport: [5060, 5061]
+
+  database:
+    dscp: 18           # AF21
+    dscp_hex: "0x48"   # TOS byte = 0x48 (per topology.md)
+    description: "Database traffic — Kết nối DB quan trọng"
+    match:
+      proto: tcp
+      dport: [3306, 5432, 27017, 6379]
+      dst: "10.100.30.0/24"
+
+  web_app:
+    dscp: 10           # AF11
+    dscp_hex: "0x28"   # TOS byte = 0x28 (per topology.md)
+    description: "Web/App traffic — Lưu lượng người dùng"
+    match:
+      proto: tcp
+      dport: [80, 443, 8080, 8443]
+      dst: ["10.100.10.0/24", "10.100.20.0/24"]
+
+  monitoring:
+    dscp: 16           # CS2 (Class Selector 2) — topology.md Phase 11
+    dscp_hex: "0x40"   # TOS byte = 0x40
+    description: "Monitoring & Telemetry — Prometheus/Node Exporter/SD-WAN"
+    match:
+      proto: [tcp, udp]
+      dport: [9090, 9100, 9302, 7070]   # Prometheus, Node Exporter, Faucet, SD-WAN API
+
+  bulk_cctv:
+    dscp: 0            # BE (Best Effort) — topology.md: CCTV và Bulk = BE
+    dscp_hex: "0x00"   # TOS byte = 0x00
+    description: "CCTV stream và bulk data — Không ưu tiên"
+    match:
+      proto: [tcp, udp]
+      src: ["10.10.35.0/24", "10.20.75.0/24", "10.30.95.0/24"]   # CCTV subnets (VLAN 35/175/295)
+
+  default:
+    dscp: 0            # BE
+    description: "Mặc định cho tất cả traffic còn lại"
+
+# ============================================================
+# tc HTB Queuing — 5-class Hierarchy Token Bucket trên WAN Links
+# Phân bổ băng thông theo topology.md Phase 11:
+#   1:10 VoIP      30% guaranteed, 80% ceiling,  priority 1
+#   1:20 Database  30% guaranteed, 70% ceiling,  priority 2
+#   1:30 Web App   25% guaranteed, 90% ceiling,  priority 3
+#   1:40 Mgmt/Mon  10% guaranteed, 30% ceiling,  priority 4
+#   1:50 Bulk/CCTV  5% guaranteed, 100% ceiling, priority 5
+# ============================================================
+htb_config:
+  paths:
+    MPLS:
+      total_rate: "100mbit"
+      classes:
+        voip:
+          class_id: "1:10"
+          rate: "30mbit"         # 30% of 100Mbps
+          ceil: "80mbit"         # 80% ceiling
+          priority: 1
+          dscp_mark: [46, 26]    # EF (RTP) + AF31 (SIP)
+          burst: "15k"
+        database:
+          class_id: "1:20"
+          rate: "30mbit"         # 30%
+          ceil: "70mbit"         # 70% ceiling
+          priority: 2
+          dscp_mark: 18          # AF21
+          burst: "32k"
+        web_app:
+          class_id: "1:30"
+          rate: "25mbit"         # 25%
+          ceil: "90mbit"         # 90% ceiling
+          priority: 3
+          dscp_mark: 10          # AF11
+          burst: "64k"
+        mgmt_mon:
+          class_id: "1:40"
+          rate: "10mbit"         # 10%
+          ceil: "30mbit"         # 30% ceiling
+          priority: 4
+          dscp_mark: 16          # CS2
+          burst: "16k"
+        bulk:
+          class_id: "1:50"
+          rate: "5mbit"          # 5%
+          ceil: "100mbit"        # 100% ceiling (best effort burst)
+          priority: 5
+          dscp_mark: 0           # BE
+          burst: "32k"
+
+    FIVEG:
+      total_rate: "200mbit"
+      classes:
+        voip:
+          class_id: "1:10"
+          rate: "60mbit"         # 30%
+          ceil: "160mbit"        # 80%
+          priority: 1
+          dscp_mark: [46, 26]
+          burst: "30k"
+        database:
+          class_id: "1:20"
+          rate: "60mbit"         # 30%
+          ceil: "140mbit"        # 70%
+          priority: 2
+          dscp_mark: 18
+          burst: "64k"
+        web_app:
+          class_id: "1:30"
+          rate: "50mbit"         # 25%
+          ceil: "180mbit"        # 90%
+          priority: 3
+          dscp_mark: 10
+          burst: "128k"
+        mgmt_mon:
+          class_id: "1:40"
+          rate: "20mbit"         # 10%
+          ceil: "60mbit"         # 30%
+          priority: 4
+          dscp_mark: 16
+          burst: "32k"
+        bulk:
+          class_id: "1:50"
+          rate: "10mbit"         # 5%
+          ceil: "200mbit"        # 100%
+          priority: 5
+          dscp_mark: 0
+          burst: "64k"
+
+    INET:
+      total_rate: "100mbit"
+      classes:
+        voip:
+          class_id: "1:10"
+          rate: "30mbit"
+          ceil: "80mbit"
+          priority: 1
+          dscp_mark: [46, 26]
+          burst: "15k"
+        database:
+          class_id: "1:20"
+          rate: "30mbit"
+          ceil: "70mbit"
+          priority: 2
+          dscp_mark: 18
+          burst: "32k"
+        web_app:
+          class_id: "1:30"
+          rate: "25mbit"
+          ceil: "90mbit"
+          priority: 3
+          dscp_mark: 10
+          burst: "64k"
+        mgmt_mon:
+          class_id: "1:40"
+          rate: "10mbit"
+          ceil: "30mbit"
+          priority: 4
+          dscp_mark: 16
+          burst: "16k"
+        bulk:
+          class_id: "1:50"
+          rate: "5mbit"
+          ceil: "100mbit"
+          priority: 5
+          dscp_mark: 0
+          burst: "32k"
+
+    VPN:
+      total_rate: "50mbit"
+      classes:
+        voip:
+          class_id: "1:10"
+          rate: "15mbit"         # 30%
+          ceil: "40mbit"         # 80%
+          priority: 1
+          dscp_mark: [46, 26]
+          burst: "12k"
+        database:
+          class_id: "1:20"
+          rate: "15mbit"         # 30%
+          ceil: "35mbit"         # 70%
+          priority: 2
+          dscp_mark: 18
+          burst: "16k"
+        web_app:
+          class_id: "1:30"
+          rate: "12mbit"         # ~25%
+          ceil: "45mbit"         # 90%
+          priority: 3
+          dscp_mark: 10
+          burst: "32k"
+        mgmt_mon:
+          class_id: "1:40"
+          rate: "5mbit"          # 10%
+          ceil: "15mbit"         # 30%
+          priority: 4
+          dscp_mark: 16
+          burst: "8k"
+        bulk:
+          class_id: "1:50"
+          rate: "3mbit"          # ~5%
+          ceil: "50mbit"         # 100%
+          priority: 5
+          dscp_mark: 0
+          burst: "16k"
+
+    LTE:
+      total_rate: "30mbit"
+      classes:
+        voip:
+          class_id: "1:10"
+          rate: "9mbit"          # 30%
+          ceil: "24mbit"         # 80%
+          priority: 1
+          dscp_mark: [46, 26]
+          burst: "8k"
+        database:
+          class_id: "1:20"
+          rate: "9mbit"          # 30%
+          ceil: "21mbit"         # 70%
+          priority: 2
+          dscp_mark: 18
+          burst: "12k"
+        web_app:
+          class_id: "1:30"
+          rate: "7mbit"          # ~25%
+          ceil: "27mbit"         # 90%
+          priority: 3
+          dscp_mark: 10
+          burst: "20k"
+        mgmt_mon:
+          class_id: "1:40"
+          rate: "3mbit"          # 10%
+          ceil: "9mbit"          # 30%
+          priority: 4
+          dscp_mark: 16
+          burst: "8k"
+        bulk:
+          class_id: "1:50"
+          rate: "2mbit"          # ~5%
+          ceil: "30mbit"         # 100%
+          priority: 5
+          dscp_mark: 0
+          burst: "8k"
+
+# ============================================================
+# VoIP QoE SLA Requirements
+# ============================================================
+voip_sla:
+  max_one_way_delay_ms: 150    # ITU-T G.114 recommendation
+  max_jitter_ms: 30            # Max jitter cho VoIP chất lượng tốt
+  max_packet_loss_pct: 1.0     # Max 1% packet loss chấp nhận được
+  mos_threshold: 3.5           # Mean Opinion Score tối thiểu (1-5)
+  codec: "G.711"               # Default codec (64kbps, PCMU/PCMA)
+  rtp_payload_size: 160        # bytes per RTP packet (G.711 20ms ptime)

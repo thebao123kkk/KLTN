@@ -1,0 +1,285 @@
+# ============================================================
+# ACL + Firewall Rules - Enterprise Network KLTN
+# Phase 7 - Security Segmentation
+# ============================================================
+# Áp dụng bằng: scripts/configure_acl.py
+# Target nodes: BL_GW, NT_DIST01, NT_DIST02, HCM_DIST01, HCM_DIST02, DC_SP_GW
+# ============================================================
+
+version: "1.0"
+
+# ============================================================
+# VLAN/Subnet Zone Definitions
+# ============================================================
+zones:
+  # User PCs (tất cả site)
+  user:
+    - "10.10.10.0/24"   # BL USER
+    - "10.20.10.0/24"   # NT ADMIN
+    - "10.20.20.0/24"   # NT SALES
+    - "10.20.30.0/24"   # NT ACCOUNTING
+    - "10.20.40.0/24"   # NT HR
+    - "10.20.50.0/24"   # NT MARKETING
+    - "10.20.60.0/24"   # NT CUSTOMER
+    - "10.30.10.0/24"   # HCM ADMIN
+    - "10.30.20.0/24"   # HCM SALES
+    - "10.30.30.0/24"   # HCM ACCOUNTING
+    - "10.30.40.0/24"   # HCM HR
+    - "10.30.50.0/24"   # HCM MARKETING
+    - "10.30.60.0/24"   # HCM CUSTOMER
+    - "10.30.70.0/24"   # HCM TECHNICAL
+
+  # IoT devices (Printers, sensors) — VLAN 30 BL / VLAN 170 NT / VLAN 290 HCM
+  iot:
+    - "10.10.30.0/24"   # BL IoT (VLAN 30)
+    - "10.20.70.0/24"   # NT IoT (VLAN 170) — printers
+    - "10.30.90.0/24"   # HCM IoT (VLAN 290) — printers
+
+  # CCTV cameras — VLAN 35 BL / VLAN 175 NT / VLAN 295 HCM
+  cctv:
+    - "10.10.35.0/24"   # BL CCTV (VLAN 35)
+    - "10.20.75.0/24"   # NT CCTV (VLAN 175)
+    - "10.30.95.0/24"   # HCM CCTV (VLAN 295)
+
+  # WiFi APs — VLAN 50 BL / VLAN 180 NT / VLAN 296 HCM
+  wifi:
+    - "10.10.50.0/24"   # BL WiFi (VLAN 50)
+    - "10.20.80.0/24"   # NT WiFi (VLAN 180)
+    - "10.30.96.0/24"   # HCM WiFi (VLAN 296)
+
+  # VoIP phones
+  voice:
+    - "10.20.90.0/24"   # NT Voice
+    - "10.30.97.0/24"   # HCM Voice
+
+  # IT Management
+  it_mgmt:
+    - "10.10.99.0/24"   # BL MGMT
+    - "10.20.99.0/24"   # NT MGMT
+    - "10.30.99.0/24"   # HCM MGMT
+    - "10.20.60.0/24"   # NT IT (reuse zone)
+    - "10.30.80.0/24"   # HCM IT
+
+  # Data Center segments
+  dc_web:   ["10.100.10.0/24"]   # VLAN 310
+  dc_app:   ["10.100.20.0/24"]   # VLAN 320
+  dc_db:    ["10.100.30.0/24"]   # VLAN 330
+  dc_infra: ["10.100.40.0/24"]   # VLAN 340 DNS+DHCP
+  dc_mon:   ["10.100.50.0/24"]   # VLAN 350 Monitoring
+  dc_mgmt:  ["10.100.60.0/24"]   # VLAN 360 Management
+
+  # All DC
+  dc_all:
+    - "10.100.10.0/24"
+    - "10.100.20.0/24"
+    - "10.100.30.0/24"
+    - "10.100.40.0/24"
+    - "10.100.50.0/24"
+    - "10.100.60.0/24"
+
+  # WAN subnets (allow OSPF/routing)
+  wan:
+    - "192.168.10.0/30"
+    - "192.168.20.0/30"
+    - "192.168.30.0/30"
+    - "172.16.10.0/24"  # Phase 9 MPLS
+    - "172.16.20.0/24"  # Phase 9 INET
+    - "172.16.30.0/24"  # Phase 9 LTE
+    - "172.16.40.0/24"  # Phase 9 5G
+    - "172.16.50.0/24"  # Phase 9 VPN
+
+# ============================================================
+# ACL Rules (evaluated top-down, first match wins)
+# ============================================================
+rules:
+  # --- Priority 0: Luôn cho phép OSPF + ICMP + MGMT ---
+  - id: ACL_00_OSPF
+    name: "ALLOW_OSPF_ROUTING"
+    description: "Cho phép OSPF giữa routers (protocol 89)"
+    proto: ospf
+    src: "0.0.0.0/0"
+    dst: "0.0.0.0/0"
+    action: ACCEPT
+
+  - id: ACL_00_ICMP
+    name: "ALLOW_ICMP_ALL"
+    description: "Cho phép ICMP (ping) để troubleshoot"
+    proto: icmp
+    src: "0.0.0.0/0"
+    dst: "0.0.0.0/0"
+    action: ACCEPT
+
+  - id: ACL_00_MGMT
+    name: "ALLOW_MGMT_ACCESS"
+    description: "IT MGMT có quyền truy cập tất cả"
+    src_zone: it_mgmt
+    dst: "10.0.0.0/8"
+    proto: any
+    action: ACCEPT
+
+  - id: ACL_00_DC_MON
+    name: "ALLOW_MONITORING_INBOUND"
+    description: "Prometheus/monitoring có thể scrape tất cả"
+    src_zone: dc_mon
+    dst: "10.0.0.0/8"
+    proto: [tcp, udp]
+    dport: [9090, 9100, 9302, 7070, 161, 162]  # Prometheus, Node Exporter, SNMP
+    action: ACCEPT
+
+  # --- Priority 1: User → DC Services ---
+  - id: ACL_01
+    name: "USER_to_WEB"
+    description: "Users có thể truy cập WEB server"
+    src_zone: user
+    dst_zone: dc_web
+    proto: tcp
+    dport: [80, 443, 8080]
+    action: ACCEPT
+
+  - id: ACL_02
+    name: "USER_to_APP"
+    description: "Users có thể dùng Application server"
+    src_zone: user
+    dst_zone: dc_app
+    proto: tcp
+    dport: [8080, 8443]
+    action: ACCEPT
+
+  - id: ACL_03
+    name: "WIFI_to_WEB"
+    description: "WiFi users có thể truy cập WEB"
+    src_zone: wifi
+    dst_zone: dc_web
+    proto: tcp
+    dport: [80, 443]
+    action: ACCEPT
+
+  # --- Priority 2: DC Internal Service Tiers ---
+  - id: ACL_04
+    name: "WEB_to_APP"
+    description: "WEB server có thể gọi APP server"
+    src_zone: dc_web
+    dst_zone: dc_app
+    proto: tcp
+    dport: [8080, 8443]
+    action: ACCEPT
+
+  - id: ACL_05
+    name: "APP_to_DB"
+    description: "APP server có thể kết nối DB"
+    src_zone: dc_app
+    dst_zone: dc_db
+    proto: tcp
+    dport: [3306, 5432, 27017, 6379]  # MySQL, PostgreSQL, MongoDB, Redis
+    action: ACCEPT
+
+  - id: ACL_06
+    name: "ALL_to_INFRA"
+    description: "Tất cả hosts có thể dùng DNS/DHCP"
+    src: "10.0.0.0/8"
+    dst_zone: dc_infra
+    proto: [tcp, udp]
+    dport: [53, 67, 68, 123]  # DNS, DHCP, NTP
+    action: ACCEPT
+
+  # --- Priority 3: VoIP/SIP ---
+  - id: ACL_07
+    name: "VOICE_to_SIP"
+    description: "VoIP phones có thể đăng ký SIP và gọi RTP"
+    src_zone: voice
+    dst_zone: dc_app
+    proto: [tcp, udp]
+    dport: [5060, 5061]  # SIP TCP/UDP
+    action: ACCEPT
+
+  - id: ACL_08
+    name: "VOICE_RTP"
+    description: "RTP media stream"
+    src_zone: voice
+    dst_zone: dc_app
+    proto: udp
+    dport: [10000, 20000]  # RTP range
+    action: ACCEPT
+
+  # --- Priority 4: CCTV → Monitoring (ALLOW) ---
+  - id: ACL_09
+    name: "CCTV_to_MONITORING"
+    description: "Camera gửi stream lên Monitoring server"
+    src_zone: cctv
+    dst_zone: dc_mon
+    proto: [tcp, udp]
+    dport: [554, 8554, 1935]  # RTSP, RTMP
+    action: ACCEPT
+
+  # --- Priority 5: DENY Rules (Security) ---
+  - id: ACL_10
+    name: "DENY_CCTV_to_DB"
+    description: "CCTV KHÔNG được truy cập DB"
+    src_zone: cctv
+    dst_zone: dc_db
+    proto: any
+    action: DROP
+    log: true
+    log_prefix: "BLOCKED_CCTV_DB"
+
+  - id: ACL_11
+    name: "DENY_IoT_to_USER"
+    description: "IoT KHÔNG được truy cập User VLAN"
+    src_zone: iot
+    dst_zone: user
+    proto: any
+    action: DROP
+    log: true
+    log_prefix: "BLOCKED_IoT_USER"
+
+  - id: ACL_12
+    name: "DENY_IoT_to_DB"
+    description: "IoT KHÔNG được truy cập DB"
+    src_zone: iot
+    dst_zone: dc_db
+    proto: any
+    action: DROP
+    log: true
+    log_prefix: "BLOCKED_IoT_DB"
+
+  - id: ACL_13
+    name: "DENY_CCTV_to_USER"
+    description: "CCTV KHÔNG được truy cập User VLAN"
+    src_zone: cctv
+    dst_zone: user
+    proto: any
+    action: DROP
+    log: true
+    log_prefix: "BLOCKED_CCTV_USER"
+
+  - id: ACL_14
+    name: "DENY_DB_DIRECT_ACCESS"
+    description: "Users không thể truy cập thẳng DB"
+    src_zone: user
+    dst_zone: dc_db
+    proto: tcp
+    dport: [3306, 5432, 27017]
+    action: DROP
+    log: true
+    log_prefix: "BLOCKED_USER_DB"
+
+  # --- Priority 6: Inter-site User Traffic ---
+  - id: ACL_15
+    name: "ALLOW_INTER_SITE_USER"
+    description: "Users giữa các site có thể liên lạc (file share, etc.)"
+    src_zone: user
+    dst_zone: user
+    proto: [tcp, udp]
+    dport: [445, 139, 3389, 22]  # SMB, RDP, SSH
+    action: ACCEPT
+
+  # --- Default: ALLOW (tránh block OSPF/routing đang hoạt động) ---
+  # Với research/lab environment, default ACCEPT an toàn hơn
+  # Production sẽ dùng default DROP
+  - id: ACL_99
+    name: "DEFAULT_ALLOW"
+    description: "Default allow cho lab environment (thay bằng DROP ở production)"
+    src: "0.0.0.0/0"
+    dst: "0.0.0.0/0"
+    proto: any
+    action: ACCEPT

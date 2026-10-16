@@ -1,0 +1,436 @@
+baobao@baobao:~/KLTN/src$ sudo ovs-vsctl --format=table --no-heading --columns=name,vlan_mode,tag,trunks list Port
+NT_ACC03        []     []  []
+DC_LEAF03-eth3  access 330 []
+NT_ACC06-eth5   access 160 []
+BL_SW-eth8      access 10  []
+DC_LEAF01-eth2  trunk  []  [310, 320, 330, 340, 350, 360]
+DC_LEAF02-eth2  trunk  []  [310, 320, 330, 340, 350, 360]
+NT_ACC01-eth2   trunk  []  [110]
+DC_LEAF03       []     []  []
+HCM_CORE-eth1   trunk  []  [210, 220, 230, 240, 250, 260, 270, 280, 290, 295, 296, 297, 299]
+HCM_DIST01_w3   []     []  []
+NT_ACC02        []     []  []
+NT_ACC03-eth1   trunk  []  [130]
+HCM_ACC06-eth31 access 295 []
+BL_SW-eth11     access 10  []
+HCM_ACC02       []     []  []
+DC_SPINE02-eth4 []     []  []
+BL_SW-eth9      access 10  []
+NT_ACC02-eth1   trunk  []  [120]
+DC_SPINE01-eth4 []     []  []
+DC_LEAF03-eth2  trunk  []  [310, 320, 330, 340, 350, 360]
+NT_ACC05-eth4   access 150 []
+HCM_ACC06-eth32 access 295 []
+NT_CORE-eth1    trunk  []  [110, 120, 130, 140, 150, 160, 170, 175, 180, 190, 199]
+NT_ACC03-eth4   access 130 []
+NT_DIST01-eth7  []     []  []
+HCM_DIST02-eth3 []     []  []
+NT_DIST02-eth2  []     []  []
+HCM_ACC06-eth24 access 280 []
+NT_ACC06-eth13  access 190 []
+NT_ACC06-eth10  access 175 []
+DC_LEAF02-eth3  access 320 []
+HCM_ACC03       []     []  []
+BL_SW-eth15     access 35  []
+HCM_DIST01_w1   []     []  []
+NT_ACC06-eth1   trunk  []  [160, 170, 175, 180, 190]
+HCM_CORE-eth2   trunk  []  [210, 220, 230, 240, 250, 260, 270, 280, 290, 295, 296, 297, 299]
+DC_SPINE01-eth2 []     []  []
+DC_SPINE02-eth6 []     []  []
+NT_ACC05        []     []  []
+NT_ACC03-eth5   access 130 []
+BL_SW-eth3      access 10  []
+NT_ACC03-eth2   trunk  []  [130]
+HCM_DIST02-eth7 []     []  []
+NT_ACC06-eth6   access 170 []
+HCM_ACC06-eth27 access 290 []
+HCM_ACC06-eth8  access 220 []
+BL_SW-eth10     access 10  []
+DC_LEAF04-eth2  trunk  []  [310, 320, 330, 340, 350, 360]
+NT_CORE         []     []  []
+NT_DIST01-eth1  []     []  []
+DC_LEAF02-eth1  trunk  []  [310, 320, 330, 340, 350, 360]
+DC_LEAF04-eth6  access 350 []
+HCM_ACC06-eth25 access 280 []
+BL_SW-eth2      access 10  []
+NT_DIST01-eth3  []     []  []
+DC_LEAF01-eth4  access 310 []
+HCM_ACC06-eth7  access 220 []
+NT_DIST01-eth5  []     []  []
+NT_ACC04-eth1   trunk  []  [140]
+DC_LEAF04-eth7  access 360 []
+HCM_ACC06-eth2  trunk  []  [270, 280, 290, 295, 296, 297]
+HCM_DIST01_w2   []     []  []
+HCM_DIST02-eth1 []     []  []
+DC_LEAF02       []     []  []
+HCM_ACC01-eth1  trunk  []  [210]
+HCM_DIST02-eth4 []     []  []
+NT_DIST02-eth5  []     []  []
+HCM_ACC06-eth23 access 270 []
+HCM_ACC01-eth2  trunk  []  [210]
+DC_LEAF02-eth4  access 320 []
+NT_DIST01-eth2  []     []  []
+NT_ACC04-eth4   access 140 []
+DC_SPINE02      []     []  []
+DC_LEAF01-eth1  trunk  []  [310, 320, 330, 340, 350, 360]
+NT_DIST02-eth4  []     []  []
+DC_SPINE01-eth5 []     []  []
+HCM_DIST01-eth5 []     []  []
+NT_ACC06-eth9   access 175 []
+HCM_ACC06-eth26 access 280 []
+NT_ACC06-eth3   access 160 []
+NT_ACC06-eth12  access 190 []
+NT_ACC06-eth11  access 180 []
+NT_ACC04-eth5   access 140 []
+HCM_DIST01-eth4 []     []  []
+HCM_DIST02-eth2 []     []  []
+DC_LEAF01       []     []  []
+HCM_ACC06-eth14 access 240 []
+HCM_ACC02-eth2  trunk  []  [220]
+NT_DIST02-eth3  []     []  []
+HCM_DIST02      []     []  []
+BL_SW-eth13     access 30  []
+HCM_ACC06-eth1  trunk  []  [270, 280, 290, 295, 296, 297]
+HCM_ACC06-eth10 access 230 []
+NT_DIST02-eth6  []     []  []
+HCM_ACC06-eth5  access 210 []
+HCM_ACC06-eth20 access 260 []
+DC_LEAF03-eth4  access 330 []
+NT_ACC06        []     []  []
+HCM_ACC06-eth29 access 290 []
+DC_LEAF04-eth1  trunk  []  [310, 320, 330, 340, 350, 360]
+NT_ACC06-eth2   trunk  []  [160, 170, 175, 180, 190]
+DC_SPINE02-eth5 []     []  []
+HCM_ACC06-eth16 access 250 []
+HCM_ACC06-eth9  access 230 []
+HCM_ACC02-eth1  trunk  []  [220]
+NT_DIST02       []     []  []
+DC_SPINE01      []     []  []
+NT_ACC02-eth5   access 120 []
+NT_ACC01-eth5   access 110 []
+NT_ACC06-eth8   access 175 []
+NT_ACC06-eth4   access 160 []
+BL_SW-eth17     trunk  []  [10, 30, 35, 50, 99]
+DC_SPINE01-eth3 []     []  []
+HCM_ACC03-eth2  trunk  []  [230]
+HCM_DIST02-eth5 []     []  []
+HCM_ACC03-eth1  trunk  []  [230]
+DC_SPINE02-eth3 []     []  []
+DC_SPINE01-eth6 []     []  []
+HCM_ACC06-eth19 access 260 []
+HCM_ACC06-eth22 access 270 []
+HCM_ACC06-eth30 access 295 []
+BL_SW-eth4      access 10  []
+NT_ACC01-eth4   access 110 []
+HCM_CORE        []     []  []
+BL_SW-eth5      access 10  []
+DC_LEAF04-eth3  access 340 []
+NT_DIST01       []     []  []
+NT_ACC06-eth7   access 170 []
+HCM_DIST01-eth3 []     []  []
+NT_ACC04-eth3   access 140 []
+NT_ACC03-eth3   access 130 []
+NT_ACC05-eth2   trunk  []  [150]
+NT_ACC01-eth3   access 110 []
+BL_SW           []     []  []
+HCM_ACC06-eth15 access 250 []
+HCM_ACC06-eth11 access 230 []
+HCM_DIST02-eth6 []     []  []
+HCM_DIST01-eth7 []     []  []
+HCM_ACC05-eth1  trunk  []  [250, 260]
+DC_SPINE02-eth2 []     []  []
+NT_ACC05-eth5   access 150 []
+BL_SW-eth1      access 10  []
+DC_LEAF04-eth5  access 340 []
+HCM_ACC05       []     []  []
+DC_LEAF04-eth4  access 340 []
+HCM_ACC06-eth13 access 240 []
+NT_ACC02-eth2   trunk  []  [120]
+HCM_ACC06-eth28 access 290 []
+NT_ACC04        []     []  []
+DC_LEAF04       []     []  []
+HCM_DIST01-eth6 []     []  []
+BL_SW-eth7      access 10  []
+HCM_ACC06-eth36 access 297 []
+HCM_ACC06-eth12 access 240 []
+HCM_ACC05-eth2  trunk  []  [250, 260]
+HCM_ACC06-eth3  access 210 []
+HCM_ACC06-eth18 access 260 []
+NT_ACC02-eth4   access 120 []
+NT_ACC01-eth1   trunk  []  [110]
+DC_LEAF01-eth3  access 310 []
+NT_ACC05-eth3   access 150 []
+HCM_ACC06-eth37 access 297 []
+NT_DIST02-eth7  []     []  []
+HCM_ACC06-eth34 access 296 []
+HCM_ACC06-eth35 access 296 []
+HCM_ACC06-eth6  access 220 []
+HCM_ACC04-eth2  trunk  []  [240]
+HCM_ACC01       []     []  []
+NT_CORE-eth2    trunk  []  [110, 120, 130, 140, 150, 160, 170, 175, 180, 190, 199]
+HCM_ACC06-eth4  access 210 []
+HCM_DIST01      []     []  []
+DC_SPINE02-eth1 []     []  []
+BL_SW-eth6      access 10  []
+HCM_ACC06-eth21 access 270 []
+NT_DIST01-eth4  []     []  []
+HCM_ACC04-eth1  trunk  []  [240]
+HCM_ACC06-eth33 access 295 []
+BL_SW-eth16     access 35  []
+HCM_DIST01-eth2 []     []  []
+DC_SPINE01-eth1 []     []  []
+HCM_DIST01-eth1 []     []  []
+DC_LEAF03-eth1  trunk  []  [310, 320, 330, 340, 350, 360]
+NT_ACC01        []     []  []
+BL_SW-eth12     access 10  []
+HCM_ACC04       []     []  []
+NT_ACC02-eth3   access 120 []
+NT_DIST01_w2    []     []  []
+HCM_ACC06-eth17 access 250 []
+NT_DIST01-eth6  []     []  []
+BL_SW-eth14     access 30  []
+HCM_ACC06       []     []  []
+NT_ACC05-eth1   trunk  []  [150]
+NT_ACC04-eth2   trunk  []  [140]
+NT_DIST02-eth1  []     []  []
+baobao@baobao:~/KLTN/src$ ip -d link show | egrep 'BL|NT|HCM|DC' -i
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+    link/ether 00:0c:29:a8:4c:50 brd ff:ff:ff:ff:ff:ff promiscuity 0  allmulti 0 minmtu 46 maxmtu 16110 addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535 tso_max_size 65536 tso_max_segs 65535 gro_max_size 65536 parentbus pci parentdev 0000:02:01.0 
+920: BL_SW-eth1@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+921: BL_SW-eth2@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+922: BL_SW-eth3@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+923: BL_SW-eth4@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+924: BL_SW-eth5@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+925: BL_SW-eth6@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+926: BL_SW-eth7@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+927: BL_SW-eth8@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+928: BL_SW-eth9@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+929: BL_SW-eth10@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+930: BL_SW-eth11@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+931: BL_SW-eth12@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+932: BL_SW-eth13@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+933: BL_SW-eth14@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+934: BL_SW-eth15@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+935: BL_SW-eth16@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+936: BL_SW-eth17@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+937: NT_CORE-eth1@NT_DIST01-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+938: NT_DIST01-eth1@NT_CORE-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+939: NT_CORE-eth2@NT_DIST02-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+940: NT_DIST02-eth1@NT_CORE-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+941: NT_DIST01-eth2@NT_ACC01-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+942: NT_ACC01-eth1@NT_DIST01-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+943: NT_DIST02-eth2@NT_ACC01-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+944: NT_ACC01-eth2@NT_DIST02-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+945: NT_DIST01-eth3@NT_ACC02-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+946: NT_ACC02-eth1@NT_DIST01-eth3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+947: NT_DIST02-eth3@NT_ACC02-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+948: NT_ACC02-eth2@NT_DIST02-eth3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+949: NT_DIST01-eth4@NT_ACC03-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+950: NT_ACC03-eth1@NT_DIST01-eth4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+951: NT_DIST02-eth4@NT_ACC03-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+952: NT_ACC03-eth2@NT_DIST02-eth4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+953: NT_DIST01-eth5@NT_ACC04-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+954: NT_ACC04-eth1@NT_DIST01-eth5: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+955: NT_DIST02-eth5@NT_ACC04-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+956: NT_ACC04-eth2@NT_DIST02-eth5: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+957: NT_DIST01-eth6@NT_ACC05-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+958: NT_ACC05-eth1@NT_DIST01-eth6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+959: NT_DIST02-eth6@NT_ACC05-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+960: NT_ACC05-eth2@NT_DIST02-eth6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+961: NT_DIST01-eth7@NT_ACC06-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+962: NT_ACC06-eth1@NT_DIST01-eth7: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+963: NT_DIST02-eth7@NT_ACC06-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+964: NT_ACC06-eth2@NT_DIST02-eth7: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+965: NT_ACC01-eth3@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+966: NT_ACC01-eth4@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+967: NT_ACC01-eth5@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+968: NT_ACC02-eth3@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+969: NT_ACC02-eth4@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+970: NT_ACC02-eth5@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+971: NT_ACC03-eth3@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+    link/ether 8a:1b:dc:18:18:f4 brd ff:ff:ff:ff:ff:ff link-netnsid 23 promiscuity 1  allmulti 0 minmtu 68 maxmtu 65535 
+972: NT_ACC03-eth4@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+973: NT_ACC03-eth5@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+974: NT_ACC04-eth3@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+975: NT_ACC04-eth4@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+976: NT_ACC04-eth5@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+977: NT_ACC05-eth3@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+978: NT_ACC05-eth4@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+979: NT_ACC05-eth5@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+980: NT_ACC06-eth3@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+981: NT_ACC06-eth4@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+982: NT_ACC06-eth5@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+983: NT_ACC06-eth6@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+984: NT_ACC06-eth7@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+985: NT_ACC06-eth8@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+986: NT_ACC06-eth9@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+987: NT_ACC06-eth10@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+988: NT_ACC06-eth11@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+989: NT_ACC06-eth12@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+990: NT_ACC06-eth13@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+991: HCM_CORE-eth1@HCM_DIST01-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+992: HCM_DIST01-eth1@HCM_CORE-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+993: HCM_CORE-eth2@HCM_DIST02-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+994: HCM_DIST02-eth1@HCM_CORE-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+995: HCM_DIST01-eth2@HCM_ACC01-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+996: HCM_ACC01-eth1@HCM_DIST01-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+997: HCM_DIST02-eth2@HCM_ACC01-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+998: HCM_ACC01-eth2@HCM_DIST02-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+999: HCM_DIST01-eth3@HCM_ACC02-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1000: HCM_ACC02-eth1@HCM_DIST01-eth3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1001: HCM_DIST02-eth3@HCM_ACC02-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1002: HCM_ACC02-eth2@HCM_DIST02-eth3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1003: HCM_DIST01-eth4@HCM_ACC03-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1004: HCM_ACC03-eth1@HCM_DIST01-eth4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1005: HCM_DIST02-eth4@HCM_ACC03-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1006: HCM_ACC03-eth2@HCM_DIST02-eth4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1007: HCM_DIST01-eth5@HCM_ACC04-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1008: HCM_ACC04-eth1@HCM_DIST01-eth5: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1009: HCM_DIST02-eth5@HCM_ACC04-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1010: HCM_ACC04-eth2@HCM_DIST02-eth5: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1011: HCM_DIST01-eth6@HCM_ACC05-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1012: HCM_ACC05-eth1@HCM_DIST01-eth6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1013: HCM_DIST02-eth6@HCM_ACC05-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1014: HCM_ACC05-eth2@HCM_DIST02-eth6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1015: HCM_DIST01-eth7@HCM_ACC06-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1016: HCM_ACC06-eth1@HCM_DIST01-eth7: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1017: HCM_DIST02-eth7@HCM_ACC06-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1018: HCM_ACC06-eth2@HCM_DIST02-eth7: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1019: HCM_ACC06-eth3@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1020: HCM_ACC06-eth4@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1021: HCM_ACC06-eth5@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1022: HCM_ACC06-eth6@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1023: HCM_ACC06-eth7@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1024: HCM_ACC06-eth8@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1025: HCM_ACC06-eth9@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1026: HCM_ACC06-eth10@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1027: HCM_ACC06-eth11@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1028: HCM_ACC06-eth12@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1029: HCM_ACC06-eth13@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1030: HCM_ACC06-eth14@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1031: HCM_ACC06-eth15@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1032: HCM_ACC06-eth16@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1033: HCM_ACC06-eth17@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1034: HCM_ACC06-eth18@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1035: HCM_ACC06-eth19@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1036: HCM_ACC06-eth20@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1037: HCM_ACC06-eth21@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1038: HCM_ACC06-eth22@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1039: HCM_ACC06-eth23@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1040: HCM_ACC06-eth24@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1041: HCM_ACC06-eth25@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1042: HCM_ACC06-eth26@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1043: HCM_ACC06-eth27@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1044: HCM_ACC06-eth28@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1045: HCM_ACC06-eth29@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1046: HCM_ACC06-eth30@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1047: HCM_ACC06-eth31@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1048: HCM_ACC06-eth32@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1049: HCM_ACC06-eth33@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1050: HCM_ACC06-eth34@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1051: HCM_ACC06-eth35@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1052: HCM_ACC06-eth36@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1053: HCM_ACC06-eth37@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1054: DC_SPINE02-eth1@DC_SPINE01-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1055: DC_SPINE01-eth1@DC_SPINE02-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1056: DC_SPINE01-eth2@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1057: DC_SPINE02-eth2@if3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1058: DC_SPINE01-eth3@DC_LEAF01-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1059: DC_LEAF01-eth1@DC_SPINE01-eth3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1060: DC_SPINE02-eth3@DC_LEAF01-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1061: DC_LEAF01-eth2@DC_SPINE02-eth3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1062: DC_SPINE01-eth4@DC_LEAF02-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1063: DC_LEAF02-eth1@DC_SPINE01-eth4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1064: DC_SPINE02-eth4@DC_LEAF02-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1065: DC_LEAF02-eth2@DC_SPINE02-eth4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1066: DC_SPINE01-eth5@DC_LEAF03-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1067: DC_LEAF03-eth1@DC_SPINE01-eth5: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1068: DC_SPINE02-eth5@DC_LEAF03-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1069: DC_LEAF03-eth2@DC_SPINE02-eth5: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1070: DC_SPINE01-eth6@DC_LEAF04-eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1071: DC_LEAF04-eth1@DC_SPINE01-eth6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1072: DC_SPINE02-eth6@DC_LEAF04-eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1073: DC_LEAF04-eth2@DC_SPINE02-eth6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1074: DC_LEAF01-eth3@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1075: DC_LEAF01-eth4@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1076: DC_LEAF02-eth3@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1077: DC_LEAF02-eth4@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1078: DC_LEAF03-eth3@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1079: DC_LEAF03-eth4@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1080: DC_LEAF04-eth3@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1081: DC_LEAF04-eth4@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1082: DC_LEAF04-eth5@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1083: DC_LEAF04-eth6@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1084: DC_LEAF04-eth7@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1085: HCM_DIST01_w1@if3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1086: HCM_DIST01_w2@NT_DIST01_w2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1087: NT_DIST01_w2@HCM_DIST01_w2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1088: HCM_DIST01_w3@if4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master ovs-system state UP mode DEFAULT group default qlen 1000
+1089: ovs-system: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1090: BL_SW: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1091: NT_CORE: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1092: NT_DIST01: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1093: NT_DIST02: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1094: NT_ACC01: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1095: NT_ACC02: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1096: NT_ACC03: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1097: NT_ACC04: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1098: NT_ACC05: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1099: NT_ACC06: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1100: HCM_CORE: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1101: HCM_DIST01: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1102: HCM_DIST02: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1103: HCM_ACC01: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1104: HCM_ACC02: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1105: HCM_ACC03: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1106: HCM_ACC04: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1107: HCM_ACC05: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1108: HCM_ACC06: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether 6e:dc:05:49:1d:43 brd ff:ff:ff:ff:ff:ff promiscuity 1  allmulti 0 minmtu 68 maxmtu 65535 
+1109: DC_SPINE01: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1110: DC_SPINE02: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1111: DC_LEAF01: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1112: DC_LEAF02: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1113: DC_LEAF03: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+1114: DC_LEAF04: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+baobao@baobao:~/KLTN/src$ sudo ip netns exec BL_GW ip addr show
+sudo ip netns exec HCM_DIST01 ip addr show
+sudo ip netns exec NT_DIST01 ip addr show
+sudo ip netns exec DC_SP_GW ip addr show
+Cannot open network namespace "BL_GW": No such file or directory
+Cannot open network namespace "HCM_DIST01": No such file or directory
+Cannot open network namespace "NT_DIST01": No such file or directory
+Cannot open network namespace "DC_SP_GW": No such file or directory
+baobao@baobao:~/KLTN/src$ sudo ip netns exec BL_GW sysctl net.ipv4.ip_forward
+sudo ip netns exec HCM_DIST01 sysctl net.ipv4.ip_forward
+Cannot open network namespace "BL_GW": No such file or directory
+Cannot open network namespace "HCM_DIST01": No such file or directory
+baobao@baobao:~/KLTN/src$ ^C
+baobao@baobao:~/KLTN/src$ sudo ip netns exec BL_GW sysctl net.ipv4.ip_forward
+Cannot open network namespace "BL_GW": No such file or directory
+baobao@baobao:~/KLTN/src$ sudo ovs-vsctl list-ports BL_SW
+sudo ovs-vsctl list-ports NT_CORE
+BL_SW-eth1
+BL_SW-eth10
+BL_SW-eth11
+BL_SW-eth12
+BL_SW-eth13
+BL_SW-eth14
+BL_SW-eth15
+BL_SW-eth16
+BL_SW-eth17
+BL_SW-eth2
+BL_SW-eth3
+BL_SW-eth4
+BL_SW-eth5
+BL_SW-eth6
+BL_SW-eth7
+BL_SW-eth8
+BL_SW-eth9
+NT_CORE-eth1
+NT_CORE-eth2
+baobao@baobao:~/KLTN/src$ sudo ip netns exec BL_ADM01 ip route
+sudo ip netns exec BL_ADM01 ping -c 3 10.10.30.1   # thử ping gateway khác VLAN
+Cannot open network namespace "BL_ADM01": No such file or directory
+Cannot open network namespace "BL_ADM01": No such file or directory
+baobao@baobao:~/KLTN/src$ 

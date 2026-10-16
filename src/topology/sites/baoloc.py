@@ -1,0 +1,250 @@
+"""
+topology/sites/baoloc.py
+BẢO LỘC — Flat Network
+=============================================
+Topology vật lý:
+  BL-GW (host FRR + keepalived)
+     |
+  BL-SW (OVS switch, VLAN-aware)
+  ├── VLAN 10  USER  : 12 PC (BL-ADMIN-PC01..03, BL-SALES-PC01..03,
+  │                           BL-ACC-PC01..03, BL-IT-PC01..03)
+  ├── VLAN 30  IoT   : BL-PRN01, BL-PRN02
+  ├── VLAN 35  CCTV  : BL-CAM01, BL-CAM02
+  ├── VLAN 50  WIFI  : BL-AP01
+  └── VLAN 99  MGMT  : (management access)
+
+Phase coverage: Phase 1 (topology), Phase 2 (VLAN+IP), Phase 3 (STP)
+"""
+
+import os
+import yaml
+from mininet.node import OVSSwitch
+
+
+# ── Đường dẫn config ──────────────────────────────────────
+_CONFIG_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'config')
+
+
+def _load_vlan_config():
+    path = os.path.join(_CONFIG_DIR, 'vlan.yaml')
+    with open(path) as f:
+        return yaml.safe_load(f)
+
+
+# ── Helper: cấu hình VLAN trên OVS port ──────────────────
+def _set_access_port(sw, port_name, vlan_id):
+    """Đặt OVS port thành access port thuộc VLAN vlan_id."""
+    os.system(f'ovs-vsctl set port {port_name} tag={vlan_id}')
+
+
+def _set_trunk_port(sw, port_name, vlan_ids=None):
+    """Đặt OVS port thành trunk port cho tất cả VLANs."""
+    os.system(f'ovs-vsctl clear port {port_name} tag')
+
+
+# ── Helper: cấu hình STP priority ────────────────────────
+def _set_stp_priority(sw_name, priority):
+    """Đặt STP bridge priority (bội số 4096)."""
+    os.system(f'ovs-vsctl set bridge {sw_name} other-config:stp-priority={priority}')
+
+
+# ── Main builder function ─────────────────────────────────
+def build_baoloc(net):
+    """
+    Thêm toàn bộ BL site vào Mininet net.
+
+    Parameters
+    ----------
+    net : Mininet
+        Instance Mininet đang chạy (đã gọi net = Mininet(...) nhưng chưa net.start())
+
+    Returns
+    -------
+    dict với keys:
+        'sw'     : OVS switch BL-SW
+        'gw'     : Mininet host đóng vai router/VRRP (BL-GW)
+        'hosts'  : dict { hostname: host_object }
+    """
+    cfg = _load_vlan_config()
+    bl = cfg['baoloc']
+
+    # ── Switch ────────────────────────────────────────────
+    # stp=False trên BL_SW để tránh STP 30-second port blocking delay
+    sw = net.addSwitch('BL_SW', cls=OVSSwitch, failMode='standalone', stp=False, dpid='0000000000000001')
+
+    # ── Gateway host (chạy FRR + keepalived) ────────────────────────────
+    # Không có IP sẵn, sẽ cấu hình qua script FRR
+    gw = net.addHost('BL_GW', ip=None)
+
+    # ── Hosts theo config ─────────────────────────────────
+    hosts = {}
+    for h_cfg in bl['hosts']:
+        h = net.addHost(
+            h_cfg['name'],
+            ip=h_cfg['ip'],
+            defaultRoute=f"via {h_cfg['gw']}"
+        )
+        hosts[h_cfg['name']] = h
+        # Kết nối host → switch
+        link = net.addLink(h, sw)
+
+        # Lưu thông tin VLAN để cấu hình sau khi net.start()
+        h.vlan = h_cfg['vlan']
+        h.link_intf = link.intf2.name   # interface phía switch
+
+    # ── Kết nối GW → switch (uplink, trunk tất cả VLAN) ──
+    gw_link = net.addLink(gw, sw)
+    gw.link_intf = gw_link.intf2.name  # interface phía switch
+
+    print(f'[BL] Đã thêm: 1 switch, 1 GW host, {len(hosts)} end hosts')
+    return {'sw': sw, 'gw': gw, 'hosts': hosts, 'gw_link_intf': gw_link.intf2.name}
+
+
+def configure_baoloc(bl_nodes):
+    """
+    Cấu hình VLAN/STP trên OVS sau khi net.start() đã chạy.
+    Gọi hàm này từ enterprise_topo.py sau net.start().
+
+    Parameters
+    ----------
+    bl_nodes : dict
+        Kết quả trả về từ build_baoloc()
+    """
+    sw = bl_nodes['sw']
+    sw_name = sw.name   # 'BL-SW'
+    hosts = bl_nodes['hosts']
+
+    cfg = _load_vlan_config()
+    bl = cfg['baoloc']
+    host_cfg_map = {h['name']: h for h in bl['hosts']}
+
+    print(f'[BL] Cấu hình VLAN trên {sw_name} ...')
+
+    # STP priority — BL-SW là root (không có redundancy, priority thấp nhất)
+    _set_stp_priority(sw_name, priority=4096)
+
+    # Cấu hình access port cho từng host
+    for hname, h in hosts.items():
+        h_cfg = host_cfg_map[hname]
+        vlan = h_cfg['vlan']
+        port_intf = h.link_intf
+        _set_access_port(sw, port_intf, vlan)
+        print(f'  [BL] {hname} → {port_intf} VLAN {vlan}')
+
+    # Cấu hình trunk port cho GW (tất cả VLAN)
+    all_vlans = [v for v in bl['vlans'].keys()]
+    _set_trunk_port(sw, bl_nodes['gw_link_intf'], all_vlans)
+    print(f'  [BL] BL-GW trunk VLANs: {all_vlans}')
+
+    # Enable inter-VLAN routing trên GW host
+    _configure_gw_interfaces(bl_nodes['gw'], bl)
+
+    print(f'[BL] ✓ VLAN configuration done')
+
+
+def _configure_gw_interfaces(gw_host, bl_cfg):
+    """
+    Cấu hình sub-interfaces VLAN và IP gateway trên BL-GW host (BL_GW-eth0.VLAN).
+    Bật IP forwarding.
+    """
+    base_intf = f'{gw_host.name}-eth0'   # interface chính của host (BL_GW-eth0)
+    gw_host.cmd('sysctl -w net.ipv4.ip_forward=1')
+    gw_host.cmd(f'ip link set {base_intf} up')
+
+    for vlan_id, vlan_info in bl_cfg['vlans'].items():
+        sub_intf = f'{base_intf}.{vlan_id}'
+        gw_ip = vlan_info['gateway']
+        prefix = vlan_info['subnet'].split('/')[1]
+
+        # Tạo VLAN sub-interface trên BL_GW-eth0
+        gw_host.cmd(f'ip link add link {base_intf} name {sub_intf} type vlan id {vlan_id} 2>/dev/null')
+        gw_host.cmd(f'ip addr add {gw_ip}/{prefix} dev {sub_intf} 2>/dev/null')
+        gw_host.cmd(f'ip link set {sub_intf} up')
+        print(f'  [BL-GW] {sub_intf}: {gw_ip}/{prefix}')
+
+
+
+
+
+def start_frr_baoloc(gw_host):
+    """
+    Khởi động FRRouting OSPF daemon trên BL-GW host với socket riêng.
+    """
+    hname = getattr(gw_host, 'name', 'BL_GW')
+    run_dir = f'/tmp/frr_{hname}'
+    gw_host.cmd(f'mkdir -p {run_dir}')
+    gw_host.cmd(f'chmod 777 {run_dir}')
+    gw_host.cmd(f'chown frr:frr {run_dir} 2>/dev/null; true')
+    # Tắt integrated-vtysh-config trong /etc/frr/frr.conf để tránh bị override
+    gw_host.cmd("sed -i 's/^service integrated-vtysh-config/no service integrated-vtysh-config/' /etc/frr/frr.conf 2>/dev/null; true")
+
+    # Tìm WAN interface name — Phase 9: tên dạng 'blgw_mpls_g', 'blgw_lte_g'
+    wan_intfs = [
+        intf.name for intf in gw_host.intfList()
+        if intf.name.startswith('blgw_')
+    ]
+    # Fallback: tìm theo '_w' (Phase 1-8 naming)
+    if not wan_intfs:
+        wan_intfs = [intf.name for intf in gw_host.intfList() if '_w' in intf.name]
+
+    passive_block = " passive-interface default\n"
+    for wi in wan_intfs:
+        passive_block += f" no passive-interface {wi}\n"
+
+    zebra_conf = f'{run_dir}/zebra.conf'
+    ospfd_conf = f'{run_dir}/ospfd.conf'
+    conf_file  = f'{run_dir}/frr.conf'  # alias → ospfd_conf
+
+    zebra_content = (
+        f"frr version 8\n"
+        f"frr defaults traditional\n"
+        f"no service integrated-vtysh-config\n"
+        f"hostname {hname}\n"
+        f"log file {run_dir}/frr.log\n"
+        "line vty\n"
+    )
+    ospfd_content = (
+        f"frr version 8\n"
+        f"frr defaults traditional\n"
+        f"no service integrated-vtysh-config\n"
+        f"hostname {hname}\n"
+        f"log file {run_dir}/frr.log\n"
+        "router ospf\n"
+        f" ospf router-id 10.10.99.1\n"
+        " network 10.10.0.0/16 area 0\n"
+        " network 192.168.10.0/30 area 0\n"
+        " network 172.16.0.0/12 area 0\n"
+        f"{passive_block}"
+        " redistribute connected\n"
+        "line vty\n"
+    )
+    gw_host.cmd(f'printf "{zebra_content}" > {zebra_conf}')
+    gw_host.cmd(f'printf "{ospfd_content}" > {ospfd_conf}')
+    gw_host.cmd(f'cp {ospfd_conf} {conf_file}')
+
+    gw_host.cmd(f'kill -9 $(cat {run_dir}/zebra.pid 2>/dev/null) 2>/dev/null; true')
+    gw_host.cmd(f'kill -9 $(cat {run_dir}/ospfd.pid 2>/dev/null) 2>/dev/null; true')
+    gw_host.cmd(f'pkill -9 -f "zebra.*{run_dir}" 2>/dev/null; true')
+    gw_host.cmd(f'pkill -9 -f "ospfd.*{run_dir}" 2>/dev/null; true')
+    gw_host.cmd(f'rm -f {run_dir}/zebra.pid {run_dir}/ospfd.pid {run_dir}/zserv.api 2>/dev/null; true')
+    gw_host.cmd('sleep 1')
+
+    gw_host.cmd(
+        f'/usr/lib/frr/zebra -d -f {zebra_conf} '
+        f'-i {run_dir}/zebra.pid -z {run_dir}/zserv.api '
+        f'--vty_socket {run_dir} 2>{run_dir}/zebra.err '
+        f'|| /usr/libexec/frr/zebra -d -f {zebra_conf} '
+        f'-i {run_dir}/zebra.pid -z {run_dir}/zserv.api '
+        f'--vty_socket {run_dir} 2>{run_dir}/zebra.err'
+    )
+    gw_host.cmd('sleep 1')
+    gw_host.cmd(
+        f'/usr/lib/frr/ospfd -d -f {ospfd_conf} '
+        f'-i {run_dir}/ospfd.pid -z {run_dir}/zserv.api '
+        f'--vty_socket {run_dir} 2>{run_dir}/ospfd.err '
+        f'|| /usr/libexec/frr/ospfd -d -f {ospfd_conf} '
+        f'-i {run_dir}/ospfd.pid -z {run_dir}/zserv.api '
+        f'--vty_socket {run_dir} 2>{run_dir}/ospfd.err'
+    )
+    print('[BL-GW] FRR OSPF started (isolated sockets in /tmp/frr_BL_GW)')
+

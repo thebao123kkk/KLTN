@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: #0b0f19;
+    color: #f1f5f9;
+    overflow-x: hidden;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Custom dark scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Network topology pulse animations */
+@keyframes net-pulse-green {
+  0%, 100% { opacity: 0.9; filter: drop-shadow(0 0 3px rgba(34, 197, 94, 0.6)); }
+  50% { opacity: 0.4; filter: drop-shadow(0 0 1px rgba(34, 197, 94, 0.2)); }
+}
+
+@keyframes net-pulse-red {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.9)); }
+  50% { opacity: 0.5; filter: drop-shadow(0 0 2px rgba(239, 68, 68, 0.3)); }
+}
+
+@keyframes net-pulse-amber {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.8)); }
+  50% { opacity: 0.5; filter: drop-shadow(0 0 2px rgba(245, 158, 11, 0.3)); }
+}
+
+.animate-net-healthy {
+  animation: net-pulse-green 3s ease-in-out infinite;
+}
+
+.animate-net-fault {
+  animation: net-pulse-red 1s ease-in-out infinite;
+}
+
+.animate-net-warning {
+  animation: net-pulse-amber 1.8s ease-in-out infinite;
+}

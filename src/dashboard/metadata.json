@@ -1,0 +1,6 @@
+{
+  "name": "NOC Real-Time Self-Healing Network Monitor",
+  "description": "Trung tâm điều hành mạng (NOC) giám sát thời gian thực topology, lưu lượng, cảnh báo sự cố và vòng lặp tự phục hồi AI cho mạng Mininet SDN & SD-WAN.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

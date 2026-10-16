@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!--                      TIÊU ĐỀ                          -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <mxCell id="title" value="SƠ ĐỒ TỔNG QUAN MẠNG DOANH NGHIỆP TỰ PHỤC HỒI" style="text;html=1;align=center;verticalAlign=middle;fontSize=16;fontStyle=1;fontColor=#1a237e;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+      <mxGeometry x="300" y="15" width="800" height="35" as="geometry" />
+    </mxCell>
+    <mxCell id="subtitle" value="SD-WAN + SDN + AI ENGINE  |  Nhóm 09 — KLTN TDTU HK1 2026-2027" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fontColor=#5c6bc0;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+      <mxGeometry x="300" y="48" width="800" height="22" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!--               TẦNG 1 — NOC DASHBOARD                  -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <mxCell id="noc" value="🖥️  NOC DASHBOARD&#xa;Flask + SocketIO :5050" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#3949ab;strokeWidth=2;fontSize=11;fontStyle=1;fontColor=#1a237e;arcSize=15;" vertex="1" parent="1">
+      <mxGeometry x="550" y="90" width="300" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- NOC ↔ AI (double arrow) -->
+    <mxCell id="e1" value="WebSocket" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#3949ab;strokeWidth=2;fontSize=9;fontColor=#3949ab;endArrow=block;startArrow=block;endFill=1;startFill=1;" edge="1" parent="1" source="noc" target="ai">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!--               TẦNG 2 — AI ENGINE                      -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <mxCell id="ai" value="🤖  AI FAULT-RECOVERY ENGINE&#xa;① Telemetry  ② Phát hiện bất thường  ③ RCA  ④ Ra quyết định" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c62828;strokeWidth=2;fontSize=11;fontStyle=1;fontColor=#b71c1c;arcSize=15;" vertex="1" parent="1">
+      <mxGeometry x="420" y="220" width="560" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- AI → SDN -->
+    <mxCell id="e2" value="OpenFlow" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=2;fontSize=9;fontColor=#1565c0;fontStyle=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="ai" target="sdn">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <!-- AI → SDWAN -->
+    <mxCell id="e3" value="Policy/API" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2e7d32;strokeWidth=2;fontSize=9;fontColor=#2e7d32;fontStyle=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="ai" target="sdwan">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!--           TẦNG 3 — SDN / SD-WAN CONTROLLER            -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <mxCell id="sdn" value="🔷  SDN CONTROLLER&#xa;Ryu SDN Framework&#xa;src/controller/sdn/&#xa;(Quản lý LAN)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1565c0;strokeWidth=2;fontSize=10;fontStyle=1;fontColor=#0d47a1;arcSize=10;" vertex="1" parent="1">
+      <mxGeometry x="130" y="360" width="210" height="100" as="geometry" />
+    </mxCell>
+    <mxCell id="sdwan" value="🟢  SD-WAN CONTROLLER&#xa;Python tự viết&#xa;src/controller/sdwan/&#xa;(Quản lý WAN)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=2;fontSize=10;fontStyle=1;fontColor=#1b5e20;arcSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1060" y="360" width="210" height="100" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!--         TẦNG 4 — 3 CHI NHÁNH (ENTERPRISE LAN)         -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+
+    <!-- SDN → 3 sites -->
+    <mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=1.5;dashed=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="sdn" target="bl">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e5" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=1.5;dashed=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="sdn" target="nt">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="235" y="500" />
+          <mxPoint x="700" y="500" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="e6" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=1.5;dashed=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="sdn" target="hcm">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="235" y="500" />
+          <mxPoint x="1060" y="500" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- BẢO LỘC -->
+    <mxCell id="bl" value="📍 BẢO LỘC&#xa;─────────────&#xa;Mô hình: Flat Network&#xa;1 Switch: BL-SW&#xa;16 thiết bị đầu cuối&#xa;VLAN: 10, 30, 35, 50, 99&#xa;IP: 10.10.0.0/16&#xa;GW: BL-GW (OSPF)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffde7;strokeColor=#f9a825;strokeWidth=2;fontSize=10;fontColor=#e65100;arcSize=10;align=center;" vertex="1" parent="1">
+      <mxGeometry x="50" y="520" width="200" height="160" as="geometry" />
+    </mxCell>
+
+    <!-- NHA TRANG -->
+    <mxCell id="nt" value="📍 NHA TRANG&#xa;─────────────&#xa;Mô hình: 3-Tier&#xa;CORE → 2 DIST (VRRP) → 6 ACC&#xa;26 thiết bị đầu cuối&#xa;VLAN: 110–199 (11 VLAN)&#xa;IP: 10.20.0.0/16&#xa;VRRP VIP: 10.20.x.1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffde7;strokeColor=#f9a825;strokeWidth=2;fontSize=10;fontColor=#e65100;arcSize=10;align=center;" vertex="1" parent="1">
+      <mxGeometry x="600" y="520" width="200" height="160" as="geometry" />
+    </mxCell>
+
+    <!-- HCM -->
+    <mxCell id="hcm" value="📍 HỒ CHÍ MINH&#xa;─────────────&#xa;Mô hình: 3-Tier&#xa;CORE → 2 DIST (VRRP) → 6 ACC&#xa;35 thiết bị đầu cuối&#xa;VLAN: 210–299 (13 VLAN)&#xa;IP: 10.30.0.0/16&#xa;VRRP VIP: 10.30.x.1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffde7;strokeColor=#f9a825;strokeWidth=2;fontSize=10;fontColor=#e65100;arcSize=10;align=center;" vertex="1" parent="1">
+      <mxGeometry x="1010" y="520" width="200" height="160" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!--              TẦNG 5 — WAN 5 ĐƯỜNG TRUYỀN              -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+
+    <!-- BL → WAN -->
+    <mxCell id="ew1" value="OSPF" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#6a1b9a;strokeWidth=1.5;dashed=1;fontSize=9;fontColor=#6a1b9a;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="bl" target="wan">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <!-- NT → WAN -->
+    <mxCell id="ew2" value="OSPF" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#6a1b9a;strokeWidth=1.5;dashed=1;fontSize=9;fontColor=#6a1b9a;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="nt" target="wan">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <!-- HCM → WAN -->
+    <mxCell id="ew3" value="OSPF" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#6a1b9a;strokeWidth=1.5;dashed=1;fontSize=9;fontColor=#6a1b9a;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="hcm" target="wan">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- SDWAN → WAN -->
+    <mxCell id="ew4" value="Điều hướng" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2e7d32;strokeWidth=2;fontSize=9;fontColor=#2e7d32;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="sdwan" target="wan">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- WAN CLOUD -->
+    <mxCell id="wan" value="☁️  WAN — 5 Đường Truyền (Mininet OVS + tc netem)&#xa;① MPLS     100 Mbps | 20ms | 0.1%       ④ 5G       200 Mbps | 15ms | 0.3%&#xa;② Internet 100 Mbps | 40ms | 0.5%       ⑤ VPN       50 Mbps | 50ms | 0.8%&#xa;③ LTE       30 Mbps | 60ms | 1.0%" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#6a1b9a;strokeWidth=2.5;fontSize=10;fontColor=#4a148c;align=center;" vertex="1" parent="1">
+      <mxGeometry x="340" y="740" width="720" height="120" as="geometry" />
+    </mxCell>
+
+    <!-- WAN → DC -->
+    <mxCell id="ew5" value="10.100.0.0/16" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#4a148c;strokeWidth=2.5;fontSize=9;fontColor=#4a148c;fontStyle=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="wan" target="dc">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!--              TẦNG 6 — DATA CENTER                     -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <mxCell id="dc" value="🏢  DATA CENTER  —  Spine-Leaf&#xa;2 SPINE  |  4 LEAF  |  10 Server&#xa;WEB · APP · DB · DNS · DHCP · MON · NTP&#xa;IP: 10.100.0.0/16" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=2.5;fontSize=11;fontStyle=1;fontColor=#1b5e20;arcSize=10;align=center;" vertex="1" parent="1">
+      <mxGeometry x="430" y="880" width="540" height="80" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!--                   CHÚ THÍCH BÊN PHẢI                  -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <mxCell id="legend" value="12 Kịch bản Sự cố (F01–F12)&#xa;──────────────────────&#xa;F01 Access link    → RSTP&#xa;F02 Distribution   → VRRP&#xa;F03 OSPF link      → Reconverge&#xa;F04 MPLS down      → Internet&#xa;F05 Internet down  → MPLS/5G&#xa;F06 LTE down       → 5G/MPLS&#xa;F07 5G degrade     → MPLS&#xa;F08 VPN down       → Transport khác&#xa;F09 WAN congestion → Reroute&#xa;F10 VoIP degrade   → QoS + Path&#xa;F11 WEB down       → Load Balancer&#xa;F12 Multi-metric   → AI Recovery" style="text;html=1;strokeColor=#bdbdbd;fillColor=#f5f5f5;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=9;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="1270" y="520" width="115" height="245" as="geometry" />
+    </mxCell>
+
+    <!-- QOS LEGEND LEFT -->
+    <mxCell id="qos" value="Chính sách QoS&#xa;──────────────────────&#xa;VoIP RTP  → EF(46)  Rất cao&#xa;VoIP SIP  → AF31    Cao&#xa;Database  → AF21    Cao&#xa;Web/App   → AF11    Trung bình&#xa;File      → BE      Thấp" style="text;html=1;strokeColor=#bdbdbd;fillColor=#f5f5f5;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=9;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="15" y="710" width="130" height="120" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>

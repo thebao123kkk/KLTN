@@ -1,0 +1,185 @@
+# faucet.yaml
+# Faucet SDN Controller Configuration for Enterprise Network Topology (Phase 14)
+
+version: 2
+
+vlans:
+  # Bảo Lộc VLANs
+  vlan10:
+    vid: 10
+    description: "BL USER"
+  vlan30:
+    vid: 30
+    description: "BL IoT"
+  vlan35:
+    vid: 35
+    description: "BL CCTV"
+  vlan50:
+    vid: 50
+    description: "BL WIFI"
+
+  # Nha Trang VLANs
+  vlan110:
+    vid: 110
+    description: "NT ADMIN"
+  vlan120:
+    vid: 120
+    description: "NT SALES"
+  vlan130:
+    vid: 130
+    description: "NT ACCOUNTING"
+  vlan140:
+    vid: 140
+    description: "NT HR"
+  vlan150:
+    vid: 150
+    description: "NT MARKETING"
+  vlan160:
+    vid: 160
+    description: "NT CUSTOMER"
+  vlan170:
+    vid: 170
+    description: "NT TECHNICAL"
+  vlan175:
+    vid: 175
+    description: "NT IoT"
+  vlan180:
+    vid: 180
+    description: "NT CCTV"
+  vlan190:
+    vid: 190
+    description: "NT VOICE"
+
+  # HCM VLANs
+  vlan210:
+    vid: 210
+    description: "HCM ADMIN"
+  vlan220:
+    vid: 220
+    description: "HCM SALES"
+  vlan230:
+    vid: 230
+    description: "HCM ACCOUNTING"
+  vlan240:
+    vid: 240
+    description: "HCM HR"
+  vlan250:
+    vid: 250
+    description: "HCM MARKETING"
+  vlan260:
+    vid: 260
+    description: "HCM R&D"
+  vlan270:
+    vid: 270
+    description: "HCM TECH"
+  vlan275:
+    vid: 275
+    description: "HCM IoT"
+  vlan280:
+    vid: 280
+    description: "HCM CCTV"
+  vlan290:
+    vid: 290
+    description: "HCM VOICE"
+
+dps:
+  BL_SW:
+    dp_id: 0x000000000003
+    hardware: "Open vSwitch"
+    interfaces:
+      1:
+        name: to_bl_gw
+        description: "Uplink to BL_GW router"
+        tagged_vlans: [vlan10, vlan30, vlan35, vlan50]
+      2:
+        name: bl_user_port
+        native_vlan: vlan10
+      3:
+        name: bl_iot_port
+        native_vlan: vlan30
+      4:
+        name: bl_cctv_port
+        native_vlan: vlan35
+      5:
+        name: bl_wifi_port
+        native_vlan: vlan50
+
+  NT_CORE:
+    dp_id: 0x000000000001
+    hardware: "Open vSwitch"
+    interfaces:
+      1:
+        name: to_nt_dist01
+        tagged_vlans: [vlan110, vlan120, vlan130, vlan140, vlan150, vlan160, vlan170, vlan175, vlan180, vlan190]
+      2:
+        name: to_nt_dist02
+        tagged_vlans: [vlan110, vlan120, vlan130, vlan140, vlan150, vlan160, vlan170, vlan175, vlan180, vlan190]
+      3:
+        name: to_nt_acc01
+        tagged_vlans: [vlan110]
+      4:
+        name: to_nt_acc02
+        tagged_vlans: [vlan120]
+      5:
+        name: to_nt_acc03
+        tagged_vlans: [vlan130, vlan140]
+      6:
+        name: to_nt_acc04
+        tagged_vlans: [vlan150, vlan160]
+      7:
+        name: to_nt_acc05
+        tagged_vlans: [vlan170, vlan175]
+      8:
+        name: to_nt_acc06
+        tagged_vlans: [vlan180, vlan190]
+
+  HCM_CORE:
+    dp_id: 0x000000000002
+    hardware: "Open vSwitch"
+    interfaces:
+      1:
+        name: to_hcm_dist01
+        tagged_vlans: [vlan210, vlan220, vlan230, vlan240, vlan250, vlan260, vlan270, vlan275, vlan280, vlan290]
+      2:
+        name: to_hcm_dist02
+        tagged_vlans: [vlan210, vlan220, vlan230, vlan240, vlan250, vlan260, vlan270, vlan275, vlan280, vlan290]
+      3:
+        name: to_hcm_acc01
+        tagged_vlans: [vlan210]
+      4:
+        name: to_hcm_acc02
+        tagged_vlans: [vlan220]
+      5:
+        name: to_hcm_acc03
+        tagged_vlans: [vlan230, vlan240]
+      6:
+        name: to_hcm_acc04
+        tagged_vlans: [vlan250, vlan260]
+      7:
+        name: to_hcm_acc05
+        tagged_vlans: [vlan270, vlan275]
+      8:
+        name: to_hcm_acc06
+        tagged_vlans: [vlan280, vlan290]
+
+  NT_ACC01:
+    dp_id: 0x000000000011
+    hardware: "Open vSwitch"
+    interfaces:
+      1:
+        name: uplink_to_core
+        tagged_vlans: [vlan110]
+      2:
+        name: port_admin_1
+        native_vlan: vlan110
+
+  HCM_ACC01:
+    dp_id: 0x000000000021
+    hardware: "Open vSwitch"
+    interfaces:
+      1:
+        name: uplink_to_core
+        tagged_vlans: [vlan210]
+      2:
+        name: port_admin_1
+        native_vlan: vlan210

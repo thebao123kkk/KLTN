@@ -1,0 +1,36 @@
+# config/prometheus.yml
+# Cấu hình Prometheus Scraper Pipeline cho Hệ Thống Tự Phục Hồi SD-WAN
+# Chu kỳ quét: 10s (phù hợp với thời gian phản hồi và phát hiện bất thường SD-WAN)
+
+global:
+  scrape_interval: 10s          # Chu kỳ lấy mẫu định kỳ 10 giây
+  evaluation_interval: 10s      # Chu kỳ đánh giá alerting rules
+  scrape_timeout: 5s            # Timeout tối đa cho mỗi lần scrape
+
+scrape_jobs:
+  # 1. Thu thập số liệu SDN Switch OpenFlow từ Faucet API / Exporter
+  - job_name: 'faucet_sdn'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['127.0.0.1:9302']
+        labels:
+          subsystem: 'sdn_data_plane'
+          controller: 'faucet'
+
+  # 2. Thu thập chỉ số chất lượng đường truyền SD-WAN (Active Prober)
+  - job_name: 'sdwan_controller'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['127.0.0.1:7070']
+        labels:
+          subsystem: 'sdwan_paths'
+          role: 'path_monitor'
+
+  # 3. Thu thập tài nguyên phần cứng & sức khỏe nút mạng Controller
+  - job_name: 'system_node'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['127.0.0.1:9100']
+        labels:
+          subsystem: 'controller_health'
+          role: 'unified_telemetry'

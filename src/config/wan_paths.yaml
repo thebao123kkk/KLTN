@@ -1,0 +1,115 @@
+# ============================================================
+# WAN Path Profiles - Enterprise Network KLTN
+# Phase 9 - 5 WAN Transport Path Emulation
+# ============================================================
+# Các giá trị này được áp dụng qua tc netem trên OVS interfaces.
+# Thay đổi file này để adjust đặc tính WAN (không cần sửa code).
+# ============================================================
+
+version: "1.0"
+
+# ─────────────────────────────────────────────────────────────
+# 5 WAN Transport Paths
+# Emulated bằng tc netem (delay/jitter/loss) + tbf (bandwidth)
+# ─────────────────────────────────────────────────────────────
+paths:
+
+  MPLS:
+    description: "MPLS leased line - cao cấp nhất, ổn định"
+    delay_ms: 20
+    jitter_ms: 2
+    loss_pct: 0.1
+    bandwidth_mbps: 100
+    dpid_suffix: "AA00"    # Dùng trong OVS dpid
+    subnet: "172.16.10"    # /24 prefix, .1=BL .2=NT .3=HCM .4=DC
+    sla_class: "premium"
+    cost: 10               # OSPF metric (thấp = ưu tiên cao)
+    correlation_pct: 25    # Tương quan giữa các gói liên tiếp
+
+# FIVEG:
+#   description: "5G NR - băng thông cao, latency thấp"
+#   delay_ms: 15
+#   jitter_ms: 5
+#   loss_pct: 0.3
+#   bandwidth_mbps: 200
+#   dpid_suffix: "AA01"
+#   subnet: "172.16.40"
+#   sla_class: "high"
+#   cost: 15
+#   correlation_pct: 30
+
+# INET:
+#   description: "Internet broadband - phổ thông, giá rẻ"
+#   delay_ms: 40
+#   jitter_ms: 10
+#   loss_pct: 0.5
+#   bandwidth_mbps: 100
+#   dpid_suffix: "AA02"
+#   subnet: "172.16.20"
+#   sla_class: "standard"
+#   cost: 30
+#   correlation_pct: 20
+
+# VPN:
+#   description: "IPSec VPN over Internet - overhead cipher"
+#   delay_ms: 50
+#   jitter_ms: 8
+#   loss_pct: 0.8
+#   bandwidth_mbps: 50
+#   dpid_suffix: "AA03"
+#   subnet: "172.16.50"
+#   sla_class: "standard"
+#   cost: 40
+#   correlation_pct: 25
+
+  LTE:
+    description: "LTE 4G - dự phòng, latency cao"
+    delay_ms: 60
+    jitter_ms: 15
+    loss_pct: 1.0
+    bandwidth_mbps: 30
+    dpid_suffix: "AA04"
+    subnet: "172.16.30"
+    sla_class: "backup"
+    cost: 50
+    correlation_pct: 35
+
+# ─────────────────────────────────────────────────────────────
+# Site IP assignments (last octet trên mỗi subnet)
+# ─────────────────────────────────────────────────────────────
+site_octets:
+  BL:  1    # BL_GW
+  NT:  2    # NT_DIST01
+  HCM: 3    # HCM_DIST01
+  DC:  4    # DC_SP_GW
+
+# ─────────────────────────────────────────────────────────────
+# Fault injection presets (dùng bởi Phase 19 và tests)
+# ─────────────────────────────────────────────────────────────
+fault_presets:
+
+  congestion:
+    description: "WAN congestion - tăng delay + loss"
+    delay_ms: 200
+    jitter_ms: 50
+    loss_pct: 20.0
+    bandwidth_mbps: 5
+
+  partial_degradation:
+    description: "Suy giảm nhẹ"
+    delay_ms: 150
+    jitter_ms: 30
+    loss_pct: 10.0
+    bandwidth_mbps: 10
+
+  high_jitter_voip:
+    description: "Jitter cao - ảnh hưởng VoIP"
+    delay_ms: 80
+    jitter_ms: 80
+    loss_pct: 2.0
+    bandwidth_mbps: 30
+
+  complete_failure:
+    description: "Link down hoàn toàn"
+    # Áp dụng: ip link set dev <intf> down
+    action: "link_down"
