@@ -7,7 +7,7 @@ global:
   evaluation_interval: 10s      # Chu kỳ đánh giá alerting rules
   scrape_timeout: 5s            # Timeout tối đa cho mỗi lần scrape
 
-scrape_jobs:
+scrape_configs:
   # 1. Thu thập số liệu SDN Switch OpenFlow từ Faucet API / Exporter
   - job_name: 'faucet_sdn'
     metrics_path: '/metrics'
@@ -34,3 +34,16 @@ scrape_jobs:
         labels:
           subsystem: 'controller_health'
           role: 'unified_telemetry'
+
+  # 4. Thu thập OpenFlow datapath & port metrics từ Gauge Exporter
+  - job_name: 'gauge_sdn'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['127.0.0.1:9303']
+        labels:
+          subsystem: 'sdn_datapath_gauge'
+          role: 'datapath_monitor'
+  # Khởi động Prometheus trên cổng 9091
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['127.0.0.1:9091']

@@ -57,7 +57,14 @@ class FaucetController:
             else:
                 print(f'[Faucet] Started Faucet Controller (PID={self.process.pid}, OF_Port={FAUCET_PORT})')
         except FileNotFoundError:
-            print('[Faucet] Faucet executable not installed in system path. (Simulated Faucet Controller mode)')
+            print('[Faucet] Faucet executable not installed in system path. Starting integrated Telemetry Exporter (:9302, :9303)...')
+            exporter_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'telemetry_exporter.py')
+            try:
+                self.process = subprocess.Popen([sys.executable, exporter_script])
+                time.sleep(1)
+                print('[Faucet] Telemetry Exporters active on ports 9302 and 9303.')
+            except Exception as e:
+                print(f'[Faucet] Could not start telemetry exporter: {e}')
 
     def stop(self):
         """Ngừng Faucet process."""

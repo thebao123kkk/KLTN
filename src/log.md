@@ -265,43 +265,6 @@ Phân tích nguyên nhân OSPF không học được routes liên site đã phá
   - Trong khối `finally:`, sử dụng guard `if topo and getattr(topo, 'net', None):` để dừng `topo.net.stop()` an toàn.
 - Purpose: Đảm bảo script kiểm thử tự động Phase 9 không bị crash đè bởi `AttributeError`, dừng tài nguyên mạng an toàn và ghi nhận log kết quả kiểm thử chuẩn xác.
 
-## 2026-10-15 01:20 +07:00 — Gom nhóm Cấu trúc Thư mục Telemetry theo Chức năng, Chuẩn hóa Kiểm thử Thu thập Thông tin & Tích hợp Auto-Collect 10s
-
-### 1. Tái cấu trúc và gom nhóm Folder Telemetry (`ai_engine/telemetry/`)
-Phân tách toàn bộ phân hệ Telemetry thành 2 gói chức năng rõ ràng, chuyên biệt hóa nhiệm vụ và loại bỏ các file trùng lặp nằm phân tán ở thư mục gốc:
-
-- **Gói 1: `ai_engine/telemetry/exporters/` (Tầng thu thập số liệu thô & xuất Prometheus)**:
-  - `sdn_exporter.py`: Thu thập số liệu cổng OpenFlow (port up/down, bytes tx/rx, lỗi flow rules) từ Faucet SDN Controller REST API / Prometheus.
-  - `wan_exporter.py`: Active probing giám sát liên tục chất lượng 5 đường truyền SD-WAN (độ trễ latency RTT, jitter, tỉ lệ mất gói loss, tải băng thông).
-  - `node_exporter.py`: Thu thập tài nguyên hệ thống (tải CPU, RAM Resident RSS, Virtual VMS của Controller) và trạng thái kết nối Datapath của các switch.
-  - `unified_server.py`: Dịch vụ máy chủ HTTP hợp nhất (port 9100) xuất toàn bộ metrics tổng hợp qua `/metrics` (Prometheus format) và JSON API `/api/telemetry/all`.
-  - `__init__.py`: Đóng gói và public toàn bộ Exporters.
-
-- **Gói 2: `ai_engine/telemetry/analysis/` (Tầng phân tích ngữ cảnh và biểu diễn trạng thái AI)**:
-  - `feature_collector.py`: Tầng Macro - Thu thập toàn mạng và tổng hợp thành Vector trạng thái 8 chiều $s_t = [C_{cpu}, C_{res}, C_{virt}, f_{sent}, f_{err}, f_{conn}, f_{disc}, P_{down}]$, hỗ trợ chuẩn hóa về $[0, 1]$ cho mạng neural PPO.
-  - `context_parser.py`: Tầng Micro - Định vị chính xác thiết bị sự cố (Switch DPID, Port hỏng, Flow Cookie lỗi, Đường WAN suy thoái).
-  - `__init__.py`: Đóng gói và public ContextParser, FeatureCollector.
-
-- **Gốc phân hệ: `ai_engine/telemetry/`**:
-  - `collector.py`: Script điều phối chính, chạy kiểm tra chu kỳ thu thập đơn lẻ hoặc chạy nền.
-  - `__init__.py`: Re-export toàn diện tất cả các class/function từ `exporters` và `analysis` để tương thích ngược 100% với các import cũ.
-
-### 2. Tự động thu thập dữ liệu mỗi 10 giây (Auto-Collect 10s - Commented)
-- Bổ sung luồng chạy ngầm `Auto-Collector Loop` định kỳ mỗi 10 giây (daemon thread, non-blocking, hỗ trợ dừng an toàn qua `threading.Event`):
-  - `ai_engine/telemetry/analysis/feature_collector.py`: Phương thức `start_auto_collector(interval_seconds=10, save_snapshot=True)` và `stop_auto_collector()`.
-  - `ai_engine/telemetry/collector.py`: Hàm `start_auto_collect(mock_mode=False, interval=10, save_snapshot_file=...)` và `stop_auto_collect()`.
-- Toàn bộ được chú thích (commented) kèm hướng dẫn chi tiết cách bỏ comment để kích hoạt ngay khi cần tích hợp với AI Agent hoặc Dashboard NOC.
-
-### 3. Tinh chỉnh các File Kiểm thử (`tests/`) — Chỉ lưu lại phần thu thập thông tin
-- `tests/test_feature_collector.py`:
-  - Loại bỏ các kịch bản tiêm sự cố giả lập (`PORT_DOWN`, `FLOW_ERROR`).
-  - Chỉ tập trung kiểm tra thu thập thông tin: Vector trạng thái 8 chiều vĩ mô, Context Registry trạng thái bình thường, dữ liệu raw telemetry 3 phân hệ, và chuẩn hóa $[0, 1]$.
-  - Tự động lưu toàn bộ dữ liệu thu thập được ra file JSON: `tests/collected_telemetry_snapshot.json`.
-- `tests/test_telemetry.py`:
-  - Cập nhật import sang `ai_engine.telemetry.exporters`.
-  - Loại bỏ tiêm lỗi sập cổng, lỗi luồng, tiêm jitter và quá tải CPU.
-  - Kiểm tra thu thập thông tin cổng SDN, 5 đường WAN, tài nguyên Node và xuất chuỗi Prometheus chuẩn.
-  - Tự động lưu snapshot dữ liệu của toàn bộ exporters ra file JSON: `tests/collected_exporters_snapshot.json`.
 
 ## 2026-10-16 15:10 +07:00 — Xây dựng Toàn diện Phân hệ Tiêm Lỗi (Fault Injection Framework) & 12 Kịch bản Lỗi (F01–F12)
 
@@ -367,78 +330,122 @@ Phân tách toàn bộ phân hệ Telemetry thành 2 gói chức năng rõ ràng
 - Chạy thử nghiệm tuần tự toàn bộ 12 kịch bản ở chế độ `--dry-run`: 100% kịch bản thực thi đúng quy trình `inject` $\rightarrow$ duy trì $\rightarrow$ `recover` mà không gặp lỗi cú pháp hay ngoại lệ.
 - Kiểm tra dữ liệu log: Tự động ghi nhận đầy đủ 26 sự kiện (INJECT & RECOVER) có mốc thời gian chuẩn ISO-8601 vào `data/logs/fault_log.json` và `data/logs/fault_log.txt`.
 
-## 2026-10-16 15:30 +07:00 — Chuẩn Hóa Phân Hệ Thu Thập Telemetry & Xuất CSV Dataset Theo Model Plan (Algorithm 1)
+## 2026-10-23 00:45 +07:00 — Xây Dựng Phân Hệ Thu Thập Telemetry (`ai_engine/telemetry`), Trích Xuất State Vector & Kiểm Thử Toàn Diện
 
-### 1. Bối cảnh & Căn cứ Kỹ thuật
-- Đối chiếu theo đặc tả tại `Model_Research_and_Implementation_Plan.md`:
-  - **Module 2 (Telemetry Collector & Labeler)** & **Giai đoạn 2 (Mục 8)**: Yêu cầu thu thập Vector trạng thái 8 chiều ($s_t$) kèm nhãn sự cố Ground Truth ($\phi_t$) và thời gian sự cố kéo dài ($\delta_t$) theo chu kỳ cào 10 giây, xuất ra file CSV dataset (`sdn_telemetry_dataset.csv`) phục vụ nạp vào Gym Environment huấn luyện tác tử RL (PPO).
-  - **Mục 7 (Pseudocode 1 - Algorithm 1)**: Định nghĩa cấu trúc 11 cột bắt buộc của bộ dữ liệu:
-    `[timestamp, c_cpu, c_res_mem, c_virt_mem, f_sent, f_err, f_conn, f_disc, p_down, fault_label, duration]`.
-  - **Mục 6.3 (Hàm phần thưởng có trọng số nghiêm trọng)**: Ánh xạ chuẩn 7 nhóm lỗi: `LINK_FAULT`, `PORT_FAULT`, `FLOW_ERROR`, `FAUCET_RELOAD`, `SOFT_WARNING`, `TEMP_WARNING`, `NONE`.
-- Tối ưu hóa tài nguyên hệ thống: Giữ trạng thái **COMMENT** đối với các vòng lặp thu thập tự động chạy ngầm (Background daemon thread) để tránh tiêu tốn RAM/CPU khi chưa bước sang giai đoạn huấn luyện online.
+### 1. Bối Cảnh & Mục Tiêu Triển Khai
+- Căn cứ theo tài liệu đặc tả `ke_hoach_thu_thap_telemetry.md` và kế hoạch nghiên cứu `Model_Research_and_Implementation_Plan.md` (Module 2: Telemetry Collector & State-Vector Synthesizer).
+- Mục tiêu: Thiết lập đường ống (pipeline) tự động cào số liệu định kỳ mỗi 10 giây từ Prometheus Server, trích xuất 8 chỉ số trạng thái mạng thô, bóc tách nhãn sự cố $\phi_t$ từ phân hệ tiêm lỗi (`fault_injection`), phân tích Context Metadata lỗi chi tiết tầng micro và tổng hợp thành Vector trạng thái 8 chiều $s_t \in \mathbb{R}^8$.
+- Đầu ra chuẩn hóa: Tập dữ liệu huấn luyện `data/sdn_telemetry_dataset.csv` gồm 15 thuộc tính và nhật ký thô `data/telemetry_log.jsonl`.
 
-### 2. Chi tiết các File Triển khai Mới & Cập nhật
+### 2. Chi Tiết Các File Đã Cài Đặt Trong Phân Hệ `ai_engine/telemetry/`
 
-#### A. Module Đọc & Ánh xạ Ngữ cảnh Sự cố (Tạo mới)
-- **File**: `ai_engine/telemetry/analysis/fault_context_reader.py`:
-  - `read_latest_fault_context(log_json_path, log_txt_path)`: Đọc trực tiếp các sự kiện tiêm lỗi từ `data/logs/fault_log.json` và fallback `fault_log.txt`.
-  - Kiểm tra trạng thái sự cố gần nhất: Nếu có sự kiện `INJECT` chưa có `RECOVER`, tính toán thời gian tồn tại chưa xử lý $\delta_t$ (giây). Nếu sự kiện cuối là `RECOVER` hoặc không có log, trả về nhãn `NONE` và $\delta_t = 0.0$.
-  - `FAULT_CATEGORY_MAP`: Ánh xạ toàn bộ 12 kịch bản (F01–F12) của `FaultInjector` sang taxonomy của Model Plan:
-    - F02, F04, F05, F06, `LINK_FAULT` $\rightarrow$ `LINK_FAULT`
-    - F01, `PORT_FAULT` $\rightarrow$ `PORT_FAULT`
-    - F09, `FLOW_ERROR` $\rightarrow$ `FLOW_ERROR`
-    - `FAUCET_RELOAD`, `CONTROLLER_FAULT` $\rightarrow$ `FAUCET_RELOAD`
-    - F07, F10, `WAN_DEGRADATION`, `QOS_DEGRADATION` $\rightarrow$ `SOFT_WARNING`
-    - F03, F08, F11, `ROUTING_FAULT`, `VPN_FAULT`, `SERVER_FAULT` $\rightarrow$ `TEMP_WARNING`
+#### A. `ai_engine/telemetry/prometheus_client.py` (Lớp Wrapper Prometheus HTTP API)
+- **Nhiệm vụ**: Kết nối và gửi truy vấn PromQL tới Prometheus Server qua HTTP API (`/api/v1/query`).
+- **Các hàm & Tính năng chính**:
+  - `is_reachable()`: Kiểm tra máy chủ Prometheus có đang hoạt động hay không qua endpoint `/-/healthy` với timeout ngắn (2 giây).
+  - `query_instant(promql)`: Truy vấn một giá trị số thực tức thời từ Prometheus, tự động lưu giá trị thành công vào bộ đệm cache `_last_known`.
+  - `query_with_fallback(promql, fallback)`: Cơ chế truy vấn chịu lỗi (fault-tolerant). Khi mất kết nối hoặc query rỗng, hàm hỗ trợ fallback linh hoạt: trả về giá trị cào thành công gần nhất (`fallback="last_known"`) hoặc giá trị mặc định được cấu hình.
+  - `query_vector(promql, label_filter)`: Lấy toàn bộ vector nhãn và giá trị của các metric per-datapath phục vụ bóc tách vị trí sự cố.
 
-#### B. Nâng cấp Bộ Trích xuất Đặc trưng (Feature Collector)
-- **File**: `ai_engine/telemetry/analysis/feature_collector.py`:
-  - Chuẩn hóa các biến trong Vector 8D:
-    - Biến $f_{sent}$: Ưu tiên lấy tổng số thông điệp OpenFlow control plane (`of_messages_sent_total`), fallback lưu lượng byte data plane (`total_rx_bytes / 1024.0`).
-    - Biến $f_{disc}$: Ưu tiên bộ đếm tích lũy số lần ngắt kết nối datapath (`disconnections_total`), fallback số switch offline tức thời (`f_disc`).
-  - Thêm phương thức `collect_with_fault(fault_log_path)`: Thu thập đồng thời Vector 8 chiều $s_t$, nhãn Ground Truth $\phi_t$, thời gian lỗi $\delta_t$, ContextRegistry và raw metrics.
-  - Thêm phương thức tĩnh `append_dataset_csv(csv_path, state_vector, fault_label, duration, timestamp)`: Ghi dữ liệu vào CSV với đúng định dạng 11 cột chuẩn theo Algorithm 1.
-  - Vòng lặp `start_auto_collector()`: Cập nhật mã nguồn ghi nhận đồng thời cả CSV dataset và snapshot JSON, **tiếp tục giữ comment** theo yêu cầu để tiết kiệm tài nguyên.
-- **File**: `ai_engine/telemetry/analysis/__init__.py`: Export bổ sung `read_latest_fault_context` và `FAULT_CATEGORY_MAP`.
+#### B. `ai_engine/telemetry/context_metadata_parser.py` (Bộ Phân Tích Context Metadata Tầng Micro)
+- **Nhiệm vụ**: Bóc tách siêu dữ liệu định vị lỗi phần cứng/luồng từ các metric per-datapath trên Prometheus.
+- **Cấu trúc dữ liệu `ContextMetadata`**:
+  - `target_dpid`: Tên hoặc ID switch xảy ra sự cố (ví dụ: `NT_CORE`, `0x1`).
+  - `target_port`: Số hiệu cổng mạng gặp sự cố (chuyển đổi chuẩn hóa từ chuỗi như `eth1` $\rightarrow$ số nguyên `1`).
+  - `error_cookie`: Mã nhận diện luồng OpenFlow bị lỗi (ví dụ: `0x10a`).
+  - `disconnected_dpids`: Danh sách ID các switch bị ngắt kết nối với Controller.
+- **Phương thức `parse()`**:
+  - Quét `of_port_status == 0` để tìm switch và cổng bị hạ (Port Down).
+  - Quét `of_errors_total > 0` để tìm cookie của luồng OpenFlow bị xung đột/từ chối.
+  - Quét `faucet_dp_status == 0` để phát hiện switch bị mất kết nối OpenFlow.
 
-#### C. Cập nhật Entry Point Thu thập (Collector)
-- **File**: `ai_engine/telemetry/collector.py`:
-  - Mở rộng hàm `run_once()`: Hỗ trợ các tham số `csv_path` và `fault_log_path`, hiển thị trực quan thông tin `[GROUND TRUTH] Nhan su co (phi_t)` và `Thoi gian loi (delta_t)`. Tự động append vào CSV khi được chỉ định.
-  - Bổ sung CLI arguments: `--csv <path>` và `--save-dataset` (lưu mặc định vào `data/sdn_telemetry_dataset.csv`).
-  - Vòng lặp auto-collect `start_auto_collect()` / `_collect_loop()`: **Tiếp tục giữ comment** theo yêu cầu.
+#### C. `ai_engine/telemetry/fault_log_reader.py` (Bộ Đọc & Đồng Bộ Nhãn Sự Cố)
+- **Nhiệm vụ**: Đọc log sự cố do `fault_injection` phát sinh để đồng bộ nhãn $\phi_t$ và thời lượng tồn tại lỗi `duration_seconds` vào dòng telemetry tương ứng.
+- **Khả năng tương thích**:
+  - Hỗ trợ đọc tệp JSONL `data/logs/fault_log.json`: Đọc ngược từ dòng cuối cùng (sự kiện mới nhất), tính toán thời gian trôi qua `duration = now - timestamp` (UTC ISO-8601) và tự động nhận diện kết thúc lỗi nếu đã hết `duration_sec`.
+  - Hỗ trợ đọc tệp Text `data/logs/fault_log.txt`: Phân tích các dòng log pipe-delimited (`FAULT_START`, `FAULT_END`) hoặc nhãn tag (`[INJECT]`, `[RECOVER]`).
+- **Chuẩn hóa nhãn**: Ánh xạ phân loại kịch bản sang tập nhãn chuẩn $\phi_t \in \{\text{LINK\_FAULT}, \text{PORT\_FAULT}, \text{FLOW\_ERROR}, \text{FAUCET\_RELOAD}, \text{SOFT\_WARNING}, \text{TEMP\_WARNING}, \text{NONE}\}$.
 
-#### D. Bổ sung Test Suite Kiểm thử Chức năng (Tạo mới)
-- **File**: `tests/test_dataset_csv_collector.py`:
-  - `test_fault_context_reader_healthy_network`: Xác nhận trả về `('NONE', 0.0)` khi mạng bình thường.
-  - `test_fault_context_reader_active_fault`: Xác nhận đọc đúng category `LINK_FAULT` và tính $\delta_t \ge 0$ khi có sự cố active.
-  - `test_csv_dataset_export_11_columns`: Kiểm tra cấu trúc header 11 cột và nội dung các dòng dữ liệu trong CSV.
-  - `test_collector_run_once_with_csv`: Kiểm tra end-to-end `collector.run_once()` xuất bản ghi CSV thành công.
+#### D. `ai_engine/telemetry/vector_assembler.py` (Lắp Ráp & Thẩm Định State Vector 8D)
+- **Nhiệm vụ**: Tổng hợp 8 giá trị đo lường thành `StateVector` ($s_t \in \mathbb{R}^8$):
+  - `ccpu` (Counter - CPU seconds của controller).
+  - `cres_mem` (Gauge - RAM Resident của controller).
+  - `cvirt_mem` (Gauge - RAM Virtual của controller).
+  - `fsent` (Counter - OpenFlow messages sent).
+  - `ferr` (Counter - OpenFlow errors).
+  - `fconn` (Gauge - Datapath connected count).
+  - `fdisc` (Counter - Datapath disconnections total).
+  - `pdown` (Gauge - Ports down total).
+- **Làm sạch & Đánh giá chất lượng dữ liệu**:
+  - `sanitize()`: Tự động loại bỏ các giá trị không hợp lệ (`NaN`, `Inf`, số âm $<0$) về giá trị mặc định an toàn.
+  - Đánh giá cờ chất lượng `data_quality`:
+    - `OK`: Thu thập đầy đủ 8 chỉ số hợp lệ.
+    - `PARTIAL`: Thiếu $\le 2$ chỉ số (được bổ sung từ fallback).
+    - `STALE`: Thiếu $3 - 5$ chỉ số, phải dùng giá trị cũ `_last_known`.
+    - `MISSING`: Thiếu $>5$ chỉ số hoặc Prometheus server ngoại tuyến.
+    - `INVALID`: Chứa giá trị lỗi NaN, Inf hoặc âm.
+  - `is_healthy()`: Kiểm tra trạng thái bình thường khi $\text{ferr} = 0, \text{fdisc} = 0, \text{pdown} = 0$.
 
-### 3. Kết Quả Kiểm Thử & Nghiệm Thu
-- Chạy unit test mới: `python -m unittest tests/test_dataset_csv_collector.py` $\rightarrow$ 4/4 tests passed (`OK`).
-- Chạy toàn bộ test suites của hệ thống: `python -m unittest discover tests` $\rightarrow$ 100% tests passed (`Ran 13 tests ... OK`), không phát sinh lỗi tương thích ngược hay ngoại lệ.
+#### E. `ai_engine/telemetry/collector.py` (Bộ Điều Phối Thu Thập Dữ Liệu Tập Trung)
+- **Nhiệm vụ**: Điều phối toàn bộ quy trình thu thập telemetry theo chu kỳ scrape định kỳ (10 giây).
+- **Hàm `collect_once()`**:
+  1. Kiểm tra trạng thái kết nối máy chủ Prometheus.
+  2. Truy vấn đồng thời 8 chỉ số trạng thái mạng dựa trên câu lệnh PromQL trong cấu hình.
+  3. Lắp ráp vector $s_t$ và đánh giá chất lượng `data_quality` qua `VectorAssembler`.
+  4. Đọc nhãn lỗi $\phi_t$ và thời gian tồn tại qua `FaultLogReader`.
+  5. Trích xuất metadata vị trí lỗi qua `ContextMetadataParser`.
+  6. Ghi dòng dữ liệu 15 cột vào CSV `data/sdn_telemetry_dataset.csv`.
+  7. Ghi bản ghi JSON thô vào `data/telemetry_log.jsonl`.
+- **Hàm `run(max_cycles, interval)`**: Vòng lặp thu thập tự động, bù trừ thời gian trôi của chu kỳ lấy mẫu và hiển thị thông tin trực quan ra console.
 
-## 2026-10-16 16:05 +07:00 — Khắc Phục Lỗi Telemetry: Đọc Trạng Thái Thiết Bị Trực Tiếp từ Open vSwitch & Linux Native
+#### F. `ai_engine/telemetry/__init__.py` (Khởi Tạo & Re-export Package)
+- Đóng gói và xuất toàn bộ các lớp, hằng số công khai: `PrometheusClient`, `FaultLogReader`, `ContextMetadataParser`, `ContextMetadata`, `VectorAssembler`, `StateVector`, `TelemetryCollector`, `STANDARD_FAULT_LABELS`, `CSV_HEADER`.
 
-### 1. Nguyên nhân Sự cố (Root Cause)
-- Trước đây `sdn_exporter.py` và `node_exporter.py` chỉ phụ thuộc vào Faucet REST API (`:9302`).
-- Khi chạy Mininet topology mà Faucet daemon chưa bật hoặc offline, hệ thống tự động lùi về (fallback) bộ nhớ đệm giả lập (`_cached_ports` và `_mock_dp_status`) có sẵn giá trị cố định (`status = 1`, 5 switch kết nối, 21 cổng UP).
-- Hậu quả: Dù người dùng thực hiện tắt switch hoặc cổng thật trong Mininet (`sh ip link set NT_ACC01 down`), Telemetry vẫn báo bình thường vì không đọc trực tiếp từ kernel Linux.
-- Ngoài ra, bảng ánh xạ `DPID_TO_SWITCH_NAME` bị lệch DPID so với sơ đồ mạng thực tế (DPID 1 là `BL_SW`, 2 là `NT_CORE`, 3 là `HCM_CORE`).
+---
 
-### 2. Các Thay đổi Đã Triển khai
-1. **`ai_engine/telemetry/exporters/sdn_exporter.py`**:
-   - Thêm cơ chế `_collect_real_ovs_ports()`: Tự động chạy `ovs-vsctl list-br` và `ovs-vsctl list-ports` để phát hiện tất cả các switch và cổng mạng thật đang chạy trong Mininet.
-   - Đọc trực tiếp trạng thái `operstate` (`/sys/class/net/<intf>/operstate` hoặc `carrier`) và thống kê `rx_bytes`, `tx_bytes`, `rx_errors`, `tx_errors` thực tế từ nhân Linux.
-   - Khi một cổng bị hạ (`down`), biến `status` chuyển thành `0`, làm tăng $p_{down}$ ngay lập tức.
-2. **`ai_engine/telemetry/exporters/node_exporter.py`**:
-   - Cập nhật `collect_dp_status()`: Khi Faucet offline, kiểm tra trực tiếp danh sách OVS bridges và trạng thái `operstate` của bridge.
-   - Nếu switch bị tắt (`ip link set <sw> down` hoặc bridge bị stop), ghi nhận `status = 0`, làm $f_{conn}$ giảm và $f_{disc}$ tăng tương ứng.
-3. **`ai_engine/telemetry/analysis/context_parser.py`**:
-   - Sửa lại bảng `DPID_TO_SWITCH_NAME` chuẩn xác 100% theo `vlan.yaml` và `topology/` (`BL_SW: 0x1`, `NT_CORE: 0x2`, `HCM_CORE: 0x3`, `NT_ACC01..06: 0x100..0x105`, `HCM_ACC01..06: 0x200..0x205`).
+### 3. Chi Tiết Các Tệp Cấu Hình & Công Cụ Hỗ Trợ Đã Cài Đặt
 
-### 3. Kết Quả Kiểm Thử
-- Chạy toàn bộ 13 unit tests: 100% passed (`OK`).
-- Telemetry đã có khả năng đọc trạng thái thực tế từ Mininet / OVS mà không còn bị phụ thuộc vào mock cứng.
+#### A. Điểm Vào Thực Thi & Cấu Hình
+- **`telemetry_collector.py` (Thư mục gốc `src/`)**:
+  - Script dòng lệnh (CLI) chính để khởi chạy tiến trình thu thập.
+  - Hỗ trợ các tham số: `--config <path>`, `--cycles <N>`, `--interval <seconds>`. Tự động cấu hình chuẩn UTF-8 cho console.
+- **`config/telemetry_config.yaml`**:
+  - Khai báo chu kỳ cào `interval_seconds: 10`, timeout 5 giây.
+  - Khai báo URL Prometheus (`http://localhost:9091` hoặc `9090`).
+  - Định nghĩa chi tiết PromQL cho 8 chỉ số trạng thái, kiểu dữ liệu (counter/gauge) và chiến lược fallback.
+  - Định cấu hình đường dẫn tệp dataset CSV, file log thô, log sự cố và các truy vấn context metadata.
+- **`config/prometheus.yml`**:
+  - Cấu hình server Prometheus với chu kỳ scrape toàn hệ thống là 10 giây.
+  - Thiết lập các job giám sát:
+    - `faucet_sdn` (cổng 9302): CPU và RAM tiến trình Faucet.
+    - `gauge_sdn` (cổng 9303): Số liệu datapath, cổng mạng và luồng OpenFlow.
+    - `system_node` (cổng 9100): Sức khỏe node máy chủ.
+    - `sdwan_controller` (cổng 7070): Chỉ số chất lượng đường truyền SD-WAN.
+
+#### B. Phân Hệ Exporter Giám Sát Mặt Phẳng Dữ Liệu
+- **`controller/sdn/telemetry_exporter.py`**:
+  - HTTP exporter đa cổng phục vụ cào dữ liệu Prometheus theo chuẩn `/metrics`:
+    - Port `9302` (Faucet Exporter): Trích xuất tài nguyên CPU/RAM hệ thống qua `/proc/self/statm` hoặc process time.
+    - Port `9303` (Gauge Exporter): Tự động quét cấu trúc mạng Mininet qua hệ thống `/sys/class/net` và OVS, xác định trạng thái cổng switch `<switch>-eth<port>` (`operstate`), tính toán số switch kết nối (`fconn`), số cổng bị hạ (`pdown`), và xuất các metric per-datapath (`of_port_status`, `faucet_dp_status`).
+    - Port `9100`: Giả lập Node Exporter.
+
+---
+
+### 4. Kết Quả Kiểm Thử & Nghiệm Thu Thử Nghiệm
+
+#### A. Kiểm Thử Đơn Vị (`tests/test_telemetry.py`)
+- Xây dựng bộ 11 test case kiểm thử toàn diện toàn bộ module:
+  - `TestPrometheusClient`: Kiểm tra truy vấn instant thành công, truy vấn rỗng, cơ chế fallback `last_known`.
+  - `TestFaultLogReader`: Kiểm tra đọc lỗi active, kiểm tra trạng thái mạng đã khôi phục (`RECOVER`), kiểm tra hết hạn thời gian duration.
+  - `TestContextMetadataParser`: Kiểm tra bóc tách `target_dpid` & `target_port` khi có cổng down, kiểm tra bóc tách `error_cookie` khi có OpenFlow error.
+  - `TestVectorAssembler`: Kiểm tra lắp ghép vector hợp lệ, kiểm tra khử lỗi NaN/Inf/âm, kiểm tra xếp hạng chất lượng dữ liệu (`OK`, `INVALID`, `PARTIAL`, `MISSING`).
+  - `TestTelemetryCollector`: Kiểm tra chu kỳ cào mẫu tích hợp và xuất file CSV đúng chuẩn 15 cột.
+- **Kết quả thực thi**: `Ran 11 tests in 0.027s - OK` (100% test case vượt qua).
+
+#### B. Công Cụ Chẩn Đoán Đường Ống (`tests/check_telemetry_pipeline.py`)
+- Script chẩn đoán nhanh toàn bộ đường ống thu thập:
+  - Kiểm tra kết nối HTTP tới 4 Exporter (`:9302`, `:9303`, `:9100`, `:7070`).
+  - Kiểm tra trạng thái máy chủ Prometheus (`:9090/-/healthy`).
+  - Tự động truy vấn danh sách Scrape Targets từ API Prometheus (`/api/v1/targets`) và in trạng thái UP/DOWN của từng job.
 
 

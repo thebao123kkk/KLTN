@@ -1,0 +1,56 @@
+# config/telemetry_config.yaml
+# Cấu hình Telemetry Scraper & State-Vector Synthesizer (Chu kỳ 10 giây)
+
+scrape:
+  interval_seconds: 10
+  timeout_seconds: 5
+
+prometheus:
+  base_url: "http://localhost:9091"
+  timeout_seconds: 5
+
+# Đặc tả 8 chỉ số của State Vector s_t = [ccpu, cres_mem, cvirt_mem, fsent, ferr, fconn, fdisc, pdown]
+metrics:
+  ccpu:
+    query: "faucet_cpu_seconds_total"
+    type: "counter"
+    fallback: "last_known"
+  cres_mem:
+    query: "process_resident_memory_bytes"
+    type: "gauge"
+    fallback: 0.0
+  cvirt_mem:
+    query: "process_virtual_memory_bytes"
+    type: "gauge"
+    fallback: 0.0
+  fsent:
+    query: "of_messages_sent_total"
+    type: "counter"
+    fallback: "last_known"
+  ferr:
+    query: "of_errors_total"
+    type: "counter"
+    fallback: "last_known"
+  fconn:
+    query: "of_datapath_connected"
+    type: "gauge"
+    fallback: 0.0
+  fdisc:
+    query: "of_datapath_disconnections_total"
+    type: "counter"
+    fallback: "last_known"
+  pdown:
+    query: "port_status_down_total"
+    type: "gauge"
+    fallback: 0.0
+
+output:
+  csv_path: "data/sdn_telemetry_dataset.csv"
+  raw_log_path: "data/telemetry_log.jsonl"
+  fault_log_path: "data/logs/fault_log.json"
+
+context_metadata:
+  enabled: true
+  port_status_query: "of_port_status"
+  error_detail_query: "of_errors_total"
+  dp_status_query: "faucet_dp_status"

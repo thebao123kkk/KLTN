@@ -14,9 +14,12 @@ Kiến trúc:
 HCM_DIST01 ─┴─ WAN_SW_LTE  ─┘
 """
 
+from __future__ import annotations
+
 import os
 import sys
 import yaml
+from typing import Optional
 from mininet.node import OVSSwitch
 from mininet.log import info
 
@@ -228,7 +231,7 @@ def _apply_netem(host, intf: str,
         )
 
 
-def get_wan_interface(site_gw_host, path_name: str) -> str | None:
+def get_wan_interface(site_gw_host, path_name: str) -> Optional[str]:
     """
     Tìm tên interface của site GW kết nối vào WAN path.
     Dùng bởi SD-WAN Controller để steeer traffic.

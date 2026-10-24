@@ -53,7 +53,7 @@ d:\KLTN\src\
 
 ## Cài đặt
 ```bash
-python3 -m venv venv
+python3 -m .venv venv
 
 source .venv/bin/activate
 
@@ -75,6 +75,9 @@ python3 controller/sdwan/sdwan_controller.py
 ### 3. Chạy Mininet topology
 ```bash
 sudo python3 topology/enterprise_topo.py
+
+sudo -E /home/baobao/KLTN/KLTN/src/.venv/bin/python3 topology/enterprise_topo.py
+
 ```
 
 ### 4. Chạy AI Fault-Recovery Engine
