@@ -8,8 +8,12 @@ scrape:
 prometheus:
   base_url: "http://localhost:9091"
   timeout_seconds: 5
+exporters:
+  gauge_url: "http://localhost:9303/metrics"
+  faucet_url: "http://localhost:9302/metrics"
+  node_url: "http://localhost:9100/metrics"
+  direct_mode: "auto"  # "auto": ưu tiên Exporter trực tiếp (:9303/:9302) như test_fault_scenarios, fallback Prometheus
 
-# Đặc tả 8 chỉ số của State Vector s_t = [ccpu, cres_mem, cvirt_mem, fsent, ferr, fconn, fdisc, pdown]
 metrics:
   ccpu:
     query: "faucet_cpu_seconds_total"

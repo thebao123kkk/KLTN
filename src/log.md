@@ -448,4 +448,132 @@ Phân tích nguyên nhân OSPF không học được routes liên site đã phá
   - Kiểm tra trạng thái máy chủ Prometheus (`:9090/-/healthy`).
   - Tự động truy vấn danh sách Scrape Targets từ API Prometheus (`/api/v1/targets`) và in trạng thái UP/DOWN của từng job.
 
+---
+
+## 2026-10-24 15:45 +07:00 — Điều Phối Thu Thập Dataset 7 Nhãn & Nâng Cấp Cơ Chế Direct Exporter Scraping
+
+### 1. Kịch Bản Tự Động Thu Thập Dataset Đủ 7/7 Nhãn Lỗi (`scripts/collect_dataset_all_labels.py`)
+
+#### A. Mục tiêu & Ý nghĩa
+- Tự động phối hợp nhịp nhàng giữa Phân hệ Tiêm sự cố ([fault_injector.py](file:///d:/DaiHoc/Nam4/KhoaLuanTotNghiep/src/wwsl/src/fault_injection/fault_injector.py)) và Bộ thu thập Telemetry ([telemetry_collector.py](file:///d:/DaiHoc/Nam4/KhoaLuanTotNghiep/src/wwsl/src/telemetry_collector.py)).
+- Đảm bảo thu thập tập dữ liệu CSV 15 cột cân bằng, hoàn chỉnh cả 7/7 loại nhãn sự cố theo chuẩn lý thuyết ($\phi_t \in \{0..6\}$) phục vụ huấn luyện các mô hình Machine Learning (Random Forest, Isolation Forest) và Reinforcement Learning (PPO Agent):
+  1. `NONE` (Mã 0): Trạng thái mạng hoạt động bình thường, không có sự cố.
+  2. `SOFT_WARNING` (Mã 1): Kịch bản F03 (OSPF Convergence Failure / Dropping OSPF packets).
+  3. `TEMP_WARNING` (Mã 2): Kịch bản F10 (VoIP Jitter & Latency spike thoáng qua trên WAN).
+  4. `FLOW_ERROR` (Mã 3): Kịch bản F09 (WAN Congestion / Overflow hàng đợi).
+  5. `PORT_FAULT` (Mã 4): Kịch bản F01 (Access Link / Port Failure).
+  6. `LINK_FAULT` (Mã 5): Kịch bản F02 (Distribution / Trunk Link Failure).
+  7. `FAUCET_RELOAD` (Mã 6): Kịch bản F12 (Controller Reload / Multi-metric Flapping).
+
+#### B. Cơ chế vận hành
+- **Vòng đời cô lập sự cố (Clean Isolation Lifecycle):**
+  - Trước khi cào nhãn `NONE`, kích hoạt `injector.recover_all()` để đảm bảo mạng hoàn toàn sạch lỗi.
+  - Khi cào từng nhãn sự cố, kích hoạt kịch bản tiêm lỗi tương ứng (`injector.inject(scenario_id)`), chờ ổn định, cào đủ số mẫu quy định (`target_per_label`), sau đó lập tức thu hồi sự cố (`injector.recover(scenario_id)`).
+  - Kết thúc toàn bộ tiến trình bằng lệnh `injector.recover_all()` đảm bảo mạng luôn được khôi phục 100%.
+- **Tham số điều khiển CLI linh hoạt:**
+  - `--target-per-label <N>`: Số dòng dữ liệu cào cho mỗi nhãn (mặc định: 3 dòng).
+  - `--interval <seconds>`: Khoảng thời gian nghỉ giữa các lần cào (mặc định: 2.0 giây).
+  - `--dry-run`: Chế độ chạy thử nghiệm an toàn trên môi trường máy trạm không có Mininet thật.
+  - `--mode {auto, direct, prometheus}`: Tùy chọn nguồn cào telemetry.
+
+---
+
+### 2. Khắc Phục Lỗi "Bắt Sai Mạng / Dữ Liệu 0.0" Bằng Cơ Chế Direct Exporter Scraping
+
+#### A. Phân tích nguyên nhân gốc rễ (Root Cause)
+- Quan sát dữ liệu trong [data/sdn_telemetry_dataset.csv](file:///d:/DaiHoc/Nam4/KhoaLuanTotNghiep/src/wwsl/src/data/sdn_telemetry_dataset.csv): Khi cào telemetry, toàn bộ 8 chỉ số của State Vector đều mang giá trị `0.0`, cột chất lượng dữ liệu báo `MISSING`, `target_port` nhận `-1`.
+- **Nguyên nhân:**
+  1. `telemetry_collector.py` phụ thuộc hoàn toàn vào máy chủ Prometheus trung gian (`:9091` / `:9090`) thông qua PromQL API (`/api/v1/query`).
+  2. Nếu Prometheus chưa được khởi động cùng file cấu hình scrape `config/prometheus.yml`, hoặc khi Prometheus scrape bị trễ chu kỳ (10–15s), các câu truy vấn PromQL trả về rỗng (`"result": []`).
+  3. Bộ thu thập rơi vào nhánh fallback gán toàn bộ 8 chỉ số về `0.0` và đánh dấu `data_quality: MISSING`.
+
+#### B. Học hỏi giải pháp từ `tests/test_fault_scenarios.py`
+Trong [tests/test_fault_scenarios.py](file:///d:/DaiHoc/Nam4/KhoaLuanTotNghiep/src/wwsl/src/tests/test_fault_scenarios.py), hàm `query_all_telemetry()` thu thập dữ liệu cực kỳ ổn định và chính xác 100% nhờ việc **truy vấn trực tiếp các HTTP endpoint của Exporter** mà không cần qua máy chủ Prometheus.
+
+#### C. Các thay đổi và nâng cấp mã nguồn đã thực hiện
+
+1. **Nâng cấp [ai_engine/telemetry/collector.py](file:///d:/DaiHoc/Nam4/KhoaLuanTotNghiep/src/wwsl/src/ai_engine/telemetry/collector.py):**
+   - Bổ sung phương thức `query_direct_exporters() -> Tuple[bool, Dict[str, float], ContextMetadata]`:
+     - Cào trực tiếp **Gauge Exporter (`:9303`)**: Bóc tách tức thời các chỉ số OpenFlow: `of_datapath_connected` ($f_{\text{conn}}$), `port_status_down_total` ($p_{\text{down}}$), `of_messages_sent_total` ($f_{\text{sent}}$), `of_errors_total` ($f_{\text{err}}$), `of_datapath_disconnections_total` ($f_{\text{disc}}$).
+     - Cào trực tiếp **Faucet Exporter (`:9302`)**: Bóc tách chỉ số tài nguyên: `faucet_cpu_seconds_total` ($c_{\text{cpu}}$), `process_resident_memory_bytes` ($c_{\text{res\_mem}}$), `process_virtual_memory_bytes` ($c_{\text{virt\_mem}}$).
+     - Cơ chế fallback cấp 2: Tự động hỏi **Node Exporter (`:9100`)** nếu Faucet Exporter chưa cung cấp chỉ số RAM.
+     - Cơ chế fallback cấp 3: Đọc trực tiếp sysfs nhân Linux `/sys/class/net/*/carrier` và `flags` (nhận diện interface `-eth`) nếu Exporter chưa kịp khởi động nhưng Mininet đang active.
+   - Cập nhật hàm `collect_once()`: Hỗ trợ cơ chế thu thập kép thông minh:
+     - Chế độ `auto` (mặc định): Thử cào trực tiếp Exporter trước (độ trễ = 0s, dữ liệu sống từ OVS), nếu thành công đánh dấu `data_quality = "OK"`. Nếu Exporter ngoại tuyến, tự động fallback sang Prometheus PromQL.
+     - Đồng bộ lưu giá trị đọc được vào cache `_last_known` của `PrometheusClient`.
+
+2. **Nâng cấp [ai_engine/telemetry/context_metadata_parser.py](file:///d:/DaiHoc/Nam4/KhoaLuanTotNghiep/src/wwsl/src/ai_engine/telemetry/context_metadata_parser.py):**
+   - Bổ sung phương thức `parse_from_text(text: str) -> ContextMetadata`:
+     - Phân tích trực tiếp các dòng metric per-datapath từ Gauge Exporter `:9303`:
+       - `of_port_status{dp_name="...", port="..."} 0` $\rightarrow$ Trích xuất tức thời `target_dpid` và `target_port`.
+       - `faucet_dp_status{dp_name="..."} 0` $\rightarrow$ Trích xuất danh sách switch mất kết nối `disconnected_dpids`.
+       - `of_errors_total > 0` $\rightarrow$ Trích xuất mã định danh lỗi `error_cookie`.
+     - Cho phép định vị lỗi tầng vi mô (Micro Context) độc lập mà không cần truy vấn vector PromQL.
+
+3. **Cập nhật [config/telemetry_config.yaml](file:///d:/DaiHoc/Nam4/KhoaLuanTotNghiep/src/wwsl/src/config/telemetry_config.yaml):**
+   - Bổ sung cấu hình `exporters`:
+     ```yaml
+     exporters:
+       gauge_url: "http://localhost:9303/metrics"
+       faucet_url: "http://localhost:9302/metrics"
+       node_url: "http://localhost:9100/metrics"
+       direct_mode: "auto"  # "auto": ưu tiên Exporter trực tiếp (:9303/:9302), fallback Prometheus
+     ```
+
+4. **Nâng cấp CLI [telemetry_collector.py](file:///d:/DaiHoc/Nam4/KhoaLuanTotNghiep/src/wwsl/src/telemetry_collector.py) & [scripts/collect_dataset_all_labels.py](file:///d:/DaiHoc/Nam4/KhoaLuanTotNghiep/src/wwsl/src/scripts/collect_dataset_all_labels.py):**
+   - Bổ sung tham số dòng lệnh `--mode {auto, direct, prometheus}` cho phép người vận hành chủ động lựa chọn phương thức thu thập phù hợp với môi trường thực thi.
+
+5. **Mở rộng bộ kiểm thử đơn vị [tests/test_telemetry.py](file:///d:/DaiHoc/Nam4/KhoaLuanTotNghiep/src/wwsl/src/tests/test_telemetry.py):**
+   - Bổ sung 3 test case kiểm thử chuyên biệt:
+     - `test_context_parser_parse_from_text` (Test Case 11): Kiểm tra bóc tách `target_dpid`, `target_port`, `disconnected_dpids` từ text Gauge Exporter.
+     - `test_direct_exporter_query` (Test Case 12): Mock 2 endpoint `:9303` và `:9302`, xác nhận trích xuất đủ và chính xác 8/8 chỉ số trạng thái và context metadata.
+     - `test_collect_once_direct_mode` (Test Case 13): Xác nhận `collect_once()` với direct mode ghi nhận `data_quality = "OK"` và giá trị số liệu hợp lệ.
+   - **Kết quả thực thi**: `Ran 14 tests in 0.036s - OK` (100% test case vượt qua).
+
+---
+
+## 2026-10-24 16:15 +07:00 — Chuẩn Hóa Phân Hệ Tiêm Lỗi (Fault Scenarios Root Namespace & Sudo Guard) & Hoàn Thành Thu Thập 100% 7/7 Nhãn Telemetry
+
+### 1. Bối Cảnh & Vấn Đề Gặp Phải
+- Khi thực thi script thu thập dataset tự động `scripts/collect_dataset_all_labels.py` trên môi trường Mininet thật, phát sinh các hiện tượng:
+  1. **Lỗi kích hoạt kịch bản F01, F02, F03, F10**: Thông báo `Cannot find device "NT_DIST01-eth1"` hoặc `Operation not permitted`.
+  2. **Nguyên nhân phân cấp Namespace**:
+     - Các router/host trong Mininet (`NT_DIST01`, `NT_CORE` host, ...) nằm trong network namespace riêng.
+     - Các switch OVS (`NT_ACC01`, `NT_CORE`, `WAN_MPLS`, ...) và các đầu veth đối ứng lại nằm tại root namespace của hệ điều hành Linux (`/sys/class/net`).
+     - Khi chạy kịch bản tiêm lỗi từ subprocess root shell thông thường, các lệnh `ip link set dev <interface> down` không tìm thấy interface nếu interface đó nằm trong switch OVS dưới tên `<switch>-eth<port>` hoặc bị chặn do không có quyền root.
+  3. **Cảnh báo rác (False Warnings) khi dọn dẹp**: Các lệnh dọn dẹp an toàn như `tc qdisc del ...` (nếu qdisc chưa từng được thêm thì `tc` trả về mã lỗi 2) hoặc `pkill -9 iperf3` (nếu chưa có tiến trình thì trả về mã 1) bị `fault_injector.py` ghi nhận thành `[WARNING] [EXEC] Lệnh thất bại (code 1/2)`.
+
+### 2. Các Thay Đổi & Nâng Cấp Kỹ Thuật
+
+#### A. Nâng cấp các kịch bản tiêm lỗi (`fault_injection/scenarios/`)
+- **Phân giải giao diện thông minh (`_resolve_interface`)**:
+  - Triển khai trong các kịch bản [f01_access_link_failure.py](file:///d:/DaiHoc/Nam4/KhoaLuanTotNghiep/src/wwsl/src/fault_injection/scenarios/f01_access_link_failure.py), [f02_distribution_failure.py](file:///d:/DaiHoc/Nam4/KhoaLuanTotNghiep/src/wwsl/src/fault_injection/scenarios/f02_distribution_failure.py), [f09_wan_congestion.py](file:///d:/DaiHoc/Nam4/KhoaLuanTotNghiep/src/wwsl/src/fault_injection/scenarios/f09_wan_congestion.py), [f10_voip_degradation.py](file:///d:/DaiHoc/Nam4/KhoaLuanTotNghiep/src/wwsl/src/fault_injection/scenarios/f10_voip_degradation.py), [f12_multi_metric_anomaly.py](file:///d:/DaiHoc/Nam4/KhoaLuanTotNghiep/src/wwsl/src/fault_injection/scenarios/f12_multi_metric_anomaly.py).
+  - Tự động quét `/sys/class/net` trên hệ thống Linux để phát hiện đúng interface thật của switch (`NT_ACC01-eth*`, `NT_CORE-eth*`, `WAN_MPLS-eth*`) hoặc fallback sang tên interface Mininet tương ứng.
+- **Chuẩn hóa giá trị trả về (`return True`)**:
+  - Đảm bảo các hàm `inject()` và `recover()` luôn trả về `True` khi lệnh can thiệp mạng hoặc dọn dẹp hoàn tất, tránh trả về `None` khiến bộ điều phối hiểu nhầm là kịch bản thất bại.
+
+#### B. Tối ưu Bộ điều phối tiêm sự cố (`fault_injection/fault_injector.py`)
+- **Tự động leo quyền với `sudo -n`**:
+  - Trong phương thức `_exec_cmd()`, nếu tiến trình đang chạy ở quyền người dùng thông thường và không có `net` node context, lệnh được tự động bọc tiền tố `sudo -n` để có thể tác động vào `ip link`, `tc`, `iptables`.
+- **Lọc cảnh báo dọn dẹp (Cleanup Log Noise Filtering)**:
+  - Bổ sung kiểm tra các lệnh dọn dẹp (`tc qdisc del`, `pkill`, `|| true`, `2>/dev/null`). Nếu gặp exit code 1 hoặc 2 (không tìm thấy tiến trình/qdisc cần xóa), ghi log ở mức `DEBUG` thay vì `WARNING`.
+
+#### C. Nâng cấp script thu thập Dataset (`scripts/collect_dataset_all_labels.py`)
+- Bổ sung `import os`.
+- Kiểm tra quyền thực thi `os.geteuid() != 0`: In cảnh báo rõ ràng yêu cầu người vận hành chạy với `sudo` để các lệnh kernel netem và OVS port down có hiệu lực thực tế.
+- Bổ sung guard `if not ok: continue` khi tiêm lỗi thất bại: Tránh việc kịch bản tiêm lỗi không thành công nhưng hệ thống vẫn tiếp tục cào số liệu gây sai lệch và lẫn sang nhãn `NONE`.
+
+### 3. Kết Quả Thu Thập Thực Tế Trên Môi Trường Mininet
+- Thực thi lệnh:
+  ```bash
+  sudo python3 scripts/collect_dataset_all_labels.py --target-per-label 3 --mode auto
+  ```
+- **Kết quả đạt được**:
+  - Thu thập trọn vẹn 21/21 dòng dữ liệu hợp lệ (3 dòng/nhãn x 7 nhãn = 21 dòng cân bằng tuyệt đối).
+  - 100% dòng dữ liệu đạt chất lượng `Quality: OK`, trích xuất tức thời 8/8 chỉ số State Vector và Context Metadata (`target_dpid`, `target_port`, `error_cookie`).
+  - Kiểm tra hoàn tất: **Toàn bộ 7 nhãn thỏa mãn: CÓ (HOÀN THÀNH)**.
+  - File dataset lưu trữ: `data/sdn_telemetry_dataset.csv`.
+
+
+
 

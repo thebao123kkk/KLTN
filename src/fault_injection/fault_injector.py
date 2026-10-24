@@ -98,7 +98,23 @@ class BaseFaultScenario(ABC):
             return 0, out, ""
         else:
             logger.debug(f"[HOST SHELL] cmd: {cmd_str}")
-            res = subprocess.run(cmd_str, shell=True, capture_output=True, text=True)
+            cmd_to_run = cmd_str
+            # Tự động thử sudo -n nếu không phải root trên Linux
+            if hasattr(os, "geteuid") and os.geteuid() != 0 and not cmd_str.startswith("sudo"):
+                cmd_to_run = f"sudo -n {cmd_str}"
+
+            res = subprocess.run(cmd_to_run, shell=True, capture_output=True, text=True)
+            if res.returncode != 0 and cmd_to_run != cmd_str:
+                # Thử lại lệnh ban đầu nếu sudo -n không khả dụng
+                res = subprocess.run(cmd_str, shell=True, capture_output=True, text=True)
+
+            if res.returncode != 0:
+                is_cleanup = any(k in cmd_str for k in ["pkill", "qdisc del", "|| true", "|| ovs-vsctl", "2>/dev/null"])
+                err_msg = res.stderr.strip() or res.stdout.strip()
+                if is_cleanup:
+                    logger.debug(f"[EXEC INFO] Lệnh cleanup kết thúc (code {res.returncode}): {cmd_str}")
+                else:
+                    logger.warning(f"[EXEC] Lệnh thất bại (code {res.returncode}): {cmd_str} | Lỗi: {err_msg}")
             return res.returncode, res.stdout, res.stderr
 
     @abstractmethod
@@ -177,10 +193,12 @@ class FaultInjector:
         self.registered_scenarios: Dict[str, Type[BaseFaultScenario]] = {}
         self.active_scenarios: Dict[str, BaseFaultScenario] = {}
 
-    def register(self, scenario_cls: Type[BaseFaultScenario]):
-        """Đăng ký một lớp kịch bản lỗi vào bộ điều phối."""
-        self.registered_scenarios[scenario_cls.scenario_id.upper()] = scenario_cls
-        logger.debug(f"Đã đăng ký kịch bản: {scenario_cls.scenario_id} - {scenario_cls.name}")
+    def register(self, scenario_cls: Type[BaseFaultScenario], alias: Optional[str] = None):
+        """Đăng ký một lớp kịch bản lỗi vào bộ điều phối (hỗ trợ alias theo tên nhãn)."""
+        key = (alias if alias else scenario_cls.scenario_id).upper()
+        self.registered_scenarios[key] = scenario_cls
+        logger.debug(f"Đã đăng ký kịch bản: {key} - {scenario_cls.name}")
+
 
     def log_event(self, event: FaultEventLog):
         """Ghi nhận log sự cố ra file JSON và text."""
@@ -293,13 +311,14 @@ class FaultInjector:
 
 
 def create_default_injector(net: Any = None, dry_run: bool = False) -> FaultInjector:
-    """Tạo bộ injector mặc định với đủ 12 kịch bản đã đăng ký sẵn."""
+    """Tạo bộ injector mặc định với đủ 12 kịch bản và alias nhãn đã đăng ký sẵn."""
     from fault_injection.scenarios import ALL_SCENARIOS
 
     injector = FaultInjector(net=net, dry_run=dry_run)
-    for scenario_cls in ALL_SCENARIOS.values():
-        injector.register(scenario_cls)
+    for sid, scenario_cls in ALL_SCENARIOS.items():
+        injector.register(scenario_cls, alias=sid)
     return injector
+
 
 
 def main():

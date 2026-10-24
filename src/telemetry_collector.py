@@ -59,10 +59,21 @@ def main():
         default=None,
         help="Ghi đè khoảng thời gian giữa các chu kỳ cào (giây)",
     )
+    parser.add_argument(
+        "--mode",
+        type=str,
+        default=None,
+        choices=["auto", "direct", "prometheus"],
+        help="Chế độ thu thập: auto (ưu tiên Exporter :9303/:9302 như test_fault_scenarios), direct, hoặc prometheus",
+    )
 
     args = parser.parse_args()
 
-    collector = TelemetryCollector(config_path_or_dict=args.config, base_dir=current_dir)
+    collector = TelemetryCollector(
+        config_path_or_dict=args.config,
+        base_dir=current_dir,
+        direct_mode=args.mode,
+    )
     collector.run(max_cycles=args.cycles, interval=args.interval)
 
 

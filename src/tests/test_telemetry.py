@@ -227,8 +227,101 @@ class TestContextMetadataParser(unittest.TestCase):
         parser = ContextMetadataParser(mock_prom)
         ctx = parser.parse()
         self.assertEqual(ctx.target_dpid, "s1")
+    def test_context_parser_parse_from_text(self):
+        """Test Case 11: Trích xuất Context Metadata từ text Gauge Exporter (:9303)"""
+        sample_text = (
+            "# HELP of_port_status\n"
+            'of_port_status{dp_name="NT_ACC01",port="2"} 0\n'
+            'of_port_status{dp_name="NT_ACC01",port="1"} 1\n'
+            'faucet_dp_status{dp_name="HCM_ACC01"} 0\n'
+            "of_errors_total 5\n"
+        )
+        parser = ContextMetadataParser()
+        ctx = parser.parse_from_text(sample_text)
+        self.assertEqual(ctx.target_dpid, "NT_ACC01")
         self.assertEqual(ctx.target_port, 2)
+        self.assertIn("HCM_ACC01", ctx.disconnected_dpids)
+        self.assertEqual(ctx.error_cookie, "ERR_COUNT_5")
+
+
+class TestDirectExporterScraping(unittest.TestCase):
+    """Kiểm thử cơ chế cào trực tiếp Exporter theo phương pháp của test_fault_scenarios.py."""
+
+    @patch("urllib.request.urlopen")
+    def test_direct_exporter_query(self, mock_urlopen):
+        """Test Case 12: Đọc trực tiếp 8 chỉ số từ Exporter :9303 và :9302"""
+        gauge_payload = (
+            "of_datapath_connected 21.0\n"
+            "port_status_down_total 2\n"
+            "of_messages_sent_total 1500\n"
+            "of_errors_total 3\n"
+            "of_datapath_disconnections_total 1\n"
+            'of_port_status{dp_name="NT_CORE",port="1"} 0\n'
+        ).encode("utf-8")
+
+        faucet_payload = (
+            "faucet_cpu_seconds_total 12.34\n"
+            'process_resident_memory_bytes{job="faucet"} 45000000\n'
+            'process_virtual_memory_bytes{job="faucet"} 230000000\n'
+        ).encode("utf-8")
+
+        def mock_response(req, **kwargs):
+            url = req.full_url if hasattr(req, "full_url") else str(req)
+            resp = MagicMock()
+            if "9303" in url:
+                resp.read.return_value = gauge_payload
+            elif "9302" in url:
+                resp.read.return_value = faucet_payload
+            else:
+                resp.read.return_value = b""
+            resp.__enter__.return_value = resp
+            return resp
+
+        mock_urlopen.side_effect = mock_response
+
+        collector = TelemetryCollector(
+            config_path_or_dict={"scrape": {}, "prometheus": {}, "exporters": {"direct_mode": "direct"}},
+            base_dir=current_dir,
+        )
+
+        success, data, ctx = collector.query_direct_exporters()
+        self.assertTrue(success)
+        self.assertEqual(data["fconn"], 21.0)
+        self.assertEqual(data["pdown"], 2.0)
+        self.assertEqual(data["fsent"], 1500.0)
+        self.assertEqual(data["ferr"], 3.0)
+        self.assertEqual(data["fdisc"], 1.0)
+        self.assertEqual(data["ccpu"], 12.34)
+        self.assertEqual(data["cres_mem"], 45000000.0)
+        self.assertEqual(data["cvirt_mem"], 230000000.0)
+        self.assertEqual(ctx.target_dpid, "NT_CORE")
+        self.assertEqual(ctx.target_port, 1)
+
+    @patch("urllib.request.urlopen")
+    def test_collect_once_direct_mode(self, mock_urlopen):
+        """Test Case 13: collect_once thu thập dữ liệu với data_quality='OK' bằng direct_mode"""
+        gauge_payload = "of_datapath_connected 5.0\nport_status_down_total 0\n".encode("utf-8")
+        faucet_payload = "faucet_cpu_seconds_total 1.0\n".encode("utf-8")
+
+        def mock_response(req, **kwargs):
+            url = req.full_url if hasattr(req, "full_url") else str(req)
+            resp = MagicMock()
+            resp.read.return_value = gauge_payload if "9303" in url else faucet_payload
+            resp.__enter__.return_value = resp
+            return resp
+
+        mock_urlopen.side_effect = mock_response
+
+        collector = TelemetryCollector(
+            config_path_or_dict={"scrape": {}, "prometheus": {}, "exporters": {"direct_mode": "direct"}},
+            base_dir=current_dir,
+        )
+
+        row = collector.collect_once()
+        self.assertEqual(row["fconn"], 5.0)
+        self.assertEqual(row["data_quality"], "OK")
 
 
 if __name__ == "__main__":
     unittest.main()
+

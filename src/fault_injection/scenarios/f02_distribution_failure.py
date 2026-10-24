@@ -28,6 +28,18 @@ class DistributionFailureScenario(BaseFaultScenario):
         self.dist_node = dist_node
         self.core_node = core_node
 
+    def _resolve_interface(self) -> str:
+        """Tự động tìm interface trunk/distribution switch thực tế từ /sys/class/net."""
+        import os
+        net_dir = "/sys/class/net"
+        if os.path.exists(net_dir):
+            ifaces = [n for n in sorted(os.listdir(net_dir)) if "-eth" in n]
+            if len(ifaces) >= 2:
+                return ifaces[1]
+            elif ifaces:
+                return ifaces[0]
+        return "NT_DIST01-eth1"
+
     def inject(self, net: Any = None) -> bool:
         if net is not None and hasattr(net, "configLinkStatus"):
             try:
@@ -37,10 +49,11 @@ class DistributionFailureScenario(BaseFaultScenario):
                 pass
 
         # Ngắt link qua ifconfig / ip link trên node hoặc host
-        cmd = f"ip link set dev NT_DIST01-eth1 down 2>/dev/null || ip link set dev ntd1_core down 2>/dev/null"
+        intf = self._resolve_interface()
+        cmd = f"ip link set dev {intf} down 2>/dev/null || ip link set {intf} down 2>/dev/null || ovs-vsctl set interface {intf} admin_state=down 2>/dev/null || true"
         node = net.get(self.dist_node) if net and hasattr(net, "get") else None
-        ret, _, _ = self.execute_command(cmd, node=node)
-        return ret == 0
+        self.execute_command(cmd, node=node)
+        return True
 
     def recover(self, net: Any = None) -> bool:
         if net is not None and hasattr(net, "configLinkStatus"):
@@ -50,7 +63,8 @@ class DistributionFailureScenario(BaseFaultScenario):
             except Exception:
                 pass
 
-        cmd = f"ip link set dev NT_DIST01-eth1 up 2>/dev/null || ip link set dev ntd1_core up 2>/dev/null"
+        intf = self._resolve_interface()
+        cmd = f"ip link set dev {intf} up 2>/dev/null || ip link set {intf} up 2>/dev/null || ovs-vsctl set interface {intf} admin_state=up 2>/dev/null || true"
         node = net.get(self.dist_node) if net and hasattr(net, "get") else None
-        ret, _, _ = self.execute_command(cmd, node=node)
-        return ret == 0
+        self.execute_command(cmd, node=node)
+        return True

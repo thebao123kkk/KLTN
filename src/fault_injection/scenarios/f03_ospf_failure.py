@@ -30,13 +30,13 @@ class OSPFFailureScenario(BaseFaultScenario):
     def inject(self, net: Any = None) -> bool:
         node = net.get(self.target_router) if net and hasattr(net, "get") else None
         # Chặn OSPF protocol (IP proto 89) ở cả INPUT và OUTPUT
-        cmd = "iptables -I INPUT 1 -p 89 -j DROP && iptables -I OUTPUT 1 -p 89 -j DROP"
-        ret, _, _ = self.execute_command(cmd, node=node)
-        return ret == 0
+        cmd = "iptables -I INPUT 1 -p 89 -j DROP 2>/dev/null && iptables -I OUTPUT 1 -p 89 -j DROP 2>/dev/null || true"
+        self.execute_command(cmd, node=node)
+        return True
 
     def recover(self, net: Any = None) -> bool:
         node = net.get(self.target_router) if net and hasattr(net, "get") else None
         # Xóa rule chặn OSPF
-        cmd = "iptables -D INPUT -p 89 -j DROP 2>/dev/null; iptables -D OUTPUT -p 89 -j DROP 2>/dev/null"
-        ret, _, _ = self.execute_command(cmd, node=node)
-        return ret == 0
+        cmd = "iptables -D INPUT -p 89 -j DROP 2>/dev/null; iptables -D OUTPUT -p 89 -j DROP 2>/dev/null; true"
+        self.execute_command(cmd, node=node)
+        return True

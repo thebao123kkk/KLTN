@@ -10,6 +10,7 @@ Trích xuất Context Metadata (DPID, Port, Cookie) từ per-datapath metrics.
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass, field
 from typing import List, Optional
 from .prometheus_client import PrometheusClient
@@ -37,11 +38,66 @@ class ContextMetadata:
 class ContextMetadataParser:
     """Truy vấn các metric per-datapath để xác định vị trí phần cứng/giao thức gặp sự cố."""
 
-    def __init__(self, prom_client: PrometheusClient):
+    def __init__(self, prom_client: Optional[PrometheusClient] = None):
         self.prom = prom_client
+
+    def parse_from_text(self, text: str) -> ContextMetadata:
+        """Trích xuất Context Metadata trực tiếp từ text metrics của Gauge Exporter (:9303)."""
+        metadata = ContextMetadata()
+        for line in text.splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split()
+            if len(parts) < 2:
+                continue
+            name, val_str = parts[0], parts[1]
+            try:
+                val = float(val_str)
+            except ValueError:
+                continue
+
+            # 1. Phát hiện port down (of_port_status == 0)
+            if "of_port_status" in name and val == 0.0:
+                m_dp = re.search(r'dp_name="([^"]+)"', name)
+                m_port = re.search(r'port="([^"]+)"', name)
+                if m_dp and not metadata.target_dpid:
+                    metadata.target_dpid = m_dp.group(1)
+                if m_port and metadata.target_port == -1:
+                    p_str = m_port.group(1)
+                    try:
+                        if "eth" in p_str:
+                            digits = "".join(filter(str.isdigit, p_str))
+                            metadata.target_port = int(digits) if digits else -1
+                        else:
+                            metadata.target_port = int(p_str)
+                    except ValueError:
+                        metadata.target_port = -1
+
+            # 2. Phát hiện lỗi OpenFlow (of_errors_total > 0)
+            elif "of_errors_total" in name and val > 0.0:
+                m_cookie = re.search(r'cookie="([^"]+)"', name)
+                if m_cookie:
+                    metadata.error_cookie = m_cookie.group(1)
+                elif not metadata.error_cookie:
+                    metadata.error_cookie = f"ERR_COUNT_{int(val)}"
+
+            # 3. Phát hiện switch mất kết nối (faucet_dp_status == 0)
+            elif "faucet_dp_status" in name and val == 0.0:
+                m_dp = re.search(r'dp_name="([^"]+)"', name)
+                if m_dp:
+                    dpid = m_dp.group(1)
+                    if dpid not in metadata.disconnected_dpids:
+                        metadata.disconnected_dpids.append(dpid)
+                    if not metadata.target_dpid:
+                        metadata.target_dpid = dpid
+
+        return metadata
 
     def parse(self) -> ContextMetadata:
         metadata = ContextMetadata()
+        if self.prom is None:
+            return metadata
 
         # 1. Tìm switch có port bị down (of_port_status == 0)
         try:

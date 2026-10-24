@@ -32,12 +32,20 @@ ALL_SCENARIOS: Dict[str, Type[BaseFaultScenario]] = {
     "F10": VoIPDegradationScenario,
     "F11": ServerFailureScenario,
     "F12": MultiMetricAnomalyScenario,
+    # Hỗ trợ trực tiếp 6 nhãn lỗi chuẩn
+    "PORT_FAULT": AccessLinkFailureScenario,       # F01
+    "LINK_FAULT": DistributionFailureScenario,     # F02
+    "SOFT_WARNING": OSPFFailureScenario,           # F03
+    "FLOW_ERROR": WANCongestionScenario,           # F09
+    "TEMP_WARNING": VoIPDegradationScenario,       # F10
+    "FAUCET_RELOAD": MultiMetricAnomalyScenario,   # F12
 }
 
 
 def get_scenario_by_id(scenario_id: str) -> Optional[Type[BaseFaultScenario]]:
-    """Lấy lớp kịch bản theo mã ID (F01..F12), không phân biệt hoa thường."""
+    """Lấy lớp kịch bản theo mã ID (F01..F12) hoặc tên nhãn."""
     return ALL_SCENARIOS.get(scenario_id.upper())
+
 
 
 __all__ = [

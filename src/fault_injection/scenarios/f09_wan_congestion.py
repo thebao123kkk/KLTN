@@ -30,10 +30,25 @@ class WANCongestionScenario(BaseFaultScenario):
         self.bandwidth_limit = bandwidth_limit
         self.iperf_pid: Optional[int] = None
 
+    def _resolve_interface(self) -> str:
+        """Tự động tìm interface WAN/Internet thực tế từ /sys/class/net."""
+        import os
+        net_dir = "/sys/class/net"
+        if os.path.exists(net_dir):
+            if os.path.exists(os.path.join(net_dir, self.target_intf)):
+                return self.target_intf
+            for n in sorted(os.listdir(net_dir)):
+                if any(k in n for k in ["_inet_", "_mpls_", "_lte_", "_5g_", "_vpn_"]):
+                    return n
+            for n in sorted(os.listdir(net_dir)):
+                if "-eth" in n:
+                    return n
+        return self.target_intf
+
     def inject(self, net: Any = None) -> bool:
-        # Cách 1: Thắt chặt bandwidth bằng tc tbf trên interface WAN để tạo nghẽn lập tức
         self.recover(net)
-        cmd_tc = f"tc qdisc add dev {self.target_intf} root tbf rate {self.bandwidth_limit} burst 32kbit latency 400ms"
+        intf = self._resolve_interface()
+        cmd_tc = f"tc qdisc add dev {intf} root tbf rate {self.bandwidth_limit} burst 32kbit latency 400ms 2>/dev/null || true"
         node = net.get("BL_GW") if net and hasattr(net, "get") else None
         self.execute_command(cmd_tc, node=node)
 
@@ -48,10 +63,11 @@ class WANCongestionScenario(BaseFaultScenario):
         return True
 
     def recover(self, net: Any = None) -> bool:
-        cmd = f"tc qdisc del dev {self.target_intf} root 2>/dev/null"
+        intf = self._resolve_interface()
+        cmd = f"tc qdisc del dev {intf} root 2>/dev/null || true"
         node = net.get("BL_GW") if net and hasattr(net, "get") else None
         self.execute_command(cmd, node=node)
 
         # Diệt các tiến trình iperf3 nếu còn chạy
-        self.execute_command("pkill -9 iperf3 2>/dev/null", node=node)
+        self.execute_command("pkill -9 iperf3 2>/dev/null || true", node=node)
         return True

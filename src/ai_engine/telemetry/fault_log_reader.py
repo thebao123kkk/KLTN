@@ -35,7 +35,13 @@ CATEGORY_TO_PHI = {
     "CONGESTION": "FLOW_ERROR",
     "TEMP_WARNING": "TEMP_WARNING",
     "SOFT_WARNING": "SOFT_WARNING",
+    "QOS_DEGRADATION": "TEMP_WARNING",        # F10 VoIP jitter/latency spike -> TEMP_WARNING
+    "MULTI_METRIC_ANOMALY": "FAUCET_RELOAD",  # F12 Controller reload + CPU -> FAUCET_RELOAD
+    "ROUTING_FAULT": "SOFT_WARNING",         # F03 OSPF convergence -> SOFT_WARNING
+    "VPN_FAULT": "SOFT_WARNING",             # F08 VPN tunnel failure -> SOFT_WARNING
+    "SERVER_FAULT": "SOFT_WARNING",          # F11 Edge server down -> SOFT_WARNING
 }
+
 
 
 class FaultLogReader:

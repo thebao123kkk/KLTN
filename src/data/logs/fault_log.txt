@@ -1,2 +1,54 @@
 [2026-10-17T14:23:11.407304+00:00] [INJECT] [F01] Access Link Failure - Targets: ['NT_ACC01', 'NT_CORE'] - Status: SUCCESS
 [2026-10-17T14:30:08.295139+00:00] [INJECT] [F01] Access Link Failure - Targets: ['NT_ACC01', 'NT_CORE'] - Status: SUCCESS
+[2026-10-24T07:54:02.855775+00:00] [INJECT] [F12] Multi-Metric Anomaly - Targets: ['WAN_FIVEG', 'BL_GW', 'NT_CORE', 'FaucetController'] - Status: START
+[2026-10-24T07:54:03.858076+00:00] [RECOVER] [F12] Multi-Metric Anomaly - Targets: ['WAN_FIVEG', 'BL_GW', 'NT_CORE', 'FaucetController'] - Status: SUCCESS
+[2026-10-24T07:54:41.653350+00:00] [INJECT] [F10] VoIP Quality Degradation - Targets: ['NT_DIST01', 'HCM_DIST01'] - Status: START
+[2026-10-24T07:54:42.654958+00:00] [RECOVER] [F10] VoIP Quality Degradation - Targets: ['NT_DIST01', 'HCM_DIST01'] - Status: SUCCESS
+[2026-10-24T07:56:23.446184+00:00] [INJECT] [F01] Access Link Failure - Targets: ['NT_ACC01', 'NT_CORE'] - Status: SUCCESS
+[2026-10-24T07:56:23.457596+00:00] [RECOVER] [F01] Access Link Failure - Targets: ['NT_ACC01', 'NT_CORE'] - Status: SUCCESS
+[2026-10-24T07:56:23.470715+00:00] [INJECT] [F02] Distribution Failure - Targets: ['NT_DIST01', 'NT_CORE'] - Status: SUCCESS
+[2026-10-24T07:56:23.486204+00:00] [RECOVER] [F02] Distribution Failure - Targets: ['NT_DIST01', 'NT_CORE'] - Status: SUCCESS
+[2026-10-24T07:56:23.498984+00:00] [INJECT] [F09] WAN Congestion - Targets: ['BL_GW', 'HCM_DIST01', 'DC_WEB01'] - Status: SUCCESS
+[2026-10-24T07:56:23.513403+00:00] [RECOVER] [F09] WAN Congestion - Targets: ['BL_GW', 'HCM_DIST01', 'DC_WEB01'] - Status: SUCCESS
+[2026-10-24T07:56:23.526350+00:00] [INJECT] [F03] OSPF Neighbor Failure - Targets: ['NT_DIST01', 'BL_GW'] - Status: SUCCESS
+[2026-10-24T07:56:23.537316+00:00] [RECOVER] [F03] OSPF Neighbor Failure - Targets: ['NT_DIST01', 'BL_GW'] - Status: SUCCESS
+[2026-10-24T07:56:23.548809+00:00] [INJECT] [F10] VoIP Quality Degradation - Targets: ['NT_DIST01', 'HCM_DIST01'] - Status: SUCCESS
+[2026-10-24T07:56:23.560955+00:00] [RECOVER] [F10] VoIP Quality Degradation - Targets: ['NT_DIST01', 'HCM_DIST01'] - Status: SUCCESS
+[2026-10-24T07:56:23.572139+00:00] [INJECT] [F12] Multi-Metric Anomaly - Targets: ['WAN_FIVEG', 'BL_GW', 'NT_CORE', 'FaucetController'] - Status: SUCCESS
+[2026-10-24T07:56:23.583189+00:00] [RECOVER] [F12] Multi-Metric Anomaly - Targets: ['WAN_FIVEG', 'BL_GW', 'NT_CORE', 'FaucetController'] - Status: SUCCESS
+[2026-10-24T07:57:23.088130+00:00] [INJECT] [F01] Access Link Failure - Targets: ['NT_ACC01', 'NT_CORE'] - Status: SUCCESS
+[2026-10-24T07:57:23.099173+00:00] [RECOVER] [F01] Access Link Failure - Targets: ['NT_ACC01', 'NT_CORE'] - Status: SUCCESS
+[2026-10-24T07:57:23.109730+00:00] [INJECT] [F02] Distribution Failure - Targets: ['NT_DIST01', 'NT_CORE'] - Status: SUCCESS
+[2026-10-24T07:57:23.121960+00:00] [RECOVER] [F02] Distribution Failure - Targets: ['NT_DIST01', 'NT_CORE'] - Status: SUCCESS
+[2026-10-24T07:57:23.132078+00:00] [INJECT] [F09] WAN Congestion - Targets: ['BL_GW', 'HCM_DIST01', 'DC_WEB01'] - Status: SUCCESS
+[2026-10-24T07:57:23.147798+00:00] [RECOVER] [F09] WAN Congestion - Targets: ['BL_GW', 'HCM_DIST01', 'DC_WEB01'] - Status: SUCCESS
+[2026-10-24T07:57:23.160528+00:00] [INJECT] [F03] OSPF Neighbor Failure - Targets: ['NT_DIST01', 'BL_GW'] - Status: SUCCESS
+[2026-10-24T07:57:23.178441+00:00] [RECOVER] [F03] OSPF Neighbor Failure - Targets: ['NT_DIST01', 'BL_GW'] - Status: SUCCESS
+[2026-10-24T07:57:23.193720+00:00] [INJECT] [F10] VoIP Quality Degradation - Targets: ['NT_DIST01', 'HCM_DIST01'] - Status: SUCCESS
+[2026-10-24T07:57:23.208384+00:00] [RECOVER] [F10] VoIP Quality Degradation - Targets: ['NT_DIST01', 'HCM_DIST01'] - Status: SUCCESS
+[2026-10-24T07:57:23.219764+00:00] [INJECT] [F12] Multi-Metric Anomaly - Targets: ['WAN_FIVEG', 'BL_GW', 'NT_CORE', 'FaucetController'] - Status: SUCCESS
+[2026-10-24T07:57:23.231248+00:00] [RECOVER] [F12] Multi-Metric Anomaly - Targets: ['WAN_FIVEG', 'BL_GW', 'NT_CORE', 'FaucetController'] - Status: SUCCESS
+[2026-10-24T07:58:10.419490+00:00] [INJECT] [F01] Access Link Failure - Targets: ['NT_ACC01', 'NT_CORE'] - Status: SUCCESS
+[2026-10-24T07:58:23.982470+00:00] [RECOVER] [F01] Access Link Failure - Targets: ['NT_ACC01', 'NT_CORE'] - Status: SUCCESS
+[2026-10-24T07:58:24.484792+00:00] [INJECT] [F02] Distribution Failure - Targets: ['NT_DIST01', 'NT_CORE'] - Status: SUCCESS
+[2026-10-24T07:58:38.031010+00:00] [RECOVER] [F02] Distribution Failure - Targets: ['NT_DIST01', 'NT_CORE'] - Status: SUCCESS
+[2026-10-24T07:58:38.532370+00:00] [INJECT] [F09] WAN Congestion - Targets: ['BL_GW', 'HCM_DIST01', 'DC_WEB01'] - Status: SUCCESS
+[2026-10-24T07:58:52.113352+00:00] [RECOVER] [F09] WAN Congestion - Targets: ['BL_GW', 'HCM_DIST01', 'DC_WEB01'] - Status: SUCCESS
+[2026-10-24T07:58:52.614649+00:00] [INJECT] [F03] OSPF Neighbor Failure - Targets: ['NT_DIST01', 'BL_GW'] - Status: SUCCESS
+[2026-10-24T07:59:06.199715+00:00] [RECOVER] [F03] OSPF Neighbor Failure - Targets: ['NT_DIST01', 'BL_GW'] - Status: SUCCESS
+[2026-10-24T07:59:06.701397+00:00] [INJECT] [F10] VoIP Quality Degradation - Targets: ['NT_DIST01', 'HCM_DIST01'] - Status: SUCCESS
+[2026-10-24T07:59:20.281574+00:00] [RECOVER] [F10] VoIP Quality Degradation - Targets: ['NT_DIST01', 'HCM_DIST01'] - Status: SUCCESS
+[2026-10-24T07:59:20.783428+00:00] [INJECT] [F12] Multi-Metric Anomaly - Targets: ['WAN_FIVEG', 'BL_GW', 'NT_CORE', 'FaucetController'] - Status: SUCCESS
+[2026-10-24T07:59:34.359220+00:00] [RECOVER] [F12] Multi-Metric Anomaly - Targets: ['WAN_FIVEG', 'BL_GW', 'NT_CORE', 'FaucetController'] - Status: SUCCESS
+[2026-10-24T08:33:30.358487+00:00] [INJECT] [F01] Access Link Failure - Targets: ['NT_ACC01', 'NT_CORE'] - Status: SUCCESS
+[2026-10-24T08:33:42.935067+00:00] [RECOVER] [F01] Access Link Failure - Targets: ['NT_ACC01', 'NT_CORE'] - Status: SUCCESS
+[2026-10-24T08:33:43.436625+00:00] [INJECT] [F02] Distribution Failure - Targets: ['NT_DIST01', 'NT_CORE'] - Status: SUCCESS
+[2026-10-24T08:33:56.005077+00:00] [RECOVER] [F02] Distribution Failure - Targets: ['NT_DIST01', 'NT_CORE'] - Status: SUCCESS
+[2026-10-24T08:33:56.506162+00:00] [INJECT] [F09] WAN Congestion - Targets: ['BL_GW', 'HCM_DIST01', 'DC_WEB01'] - Status: SUCCESS
+[2026-10-24T08:34:09.069698+00:00] [RECOVER] [F09] WAN Congestion - Targets: ['BL_GW', 'HCM_DIST01', 'DC_WEB01'] - Status: SUCCESS
+[2026-10-24T08:34:09.571271+00:00] [INJECT] [F03] OSPF Neighbor Failure - Targets: ['NT_DIST01', 'BL_GW'] - Status: SUCCESS
+[2026-10-24T08:34:22.142794+00:00] [RECOVER] [F03] OSPF Neighbor Failure - Targets: ['NT_DIST01', 'BL_GW'] - Status: SUCCESS
+[2026-10-24T08:34:22.644735+00:00] [INJECT] [F10] VoIP Quality Degradation - Targets: ['NT_DIST01', 'HCM_DIST01'] - Status: SUCCESS
+[2026-10-24T08:34:35.214249+00:00] [RECOVER] [F10] VoIP Quality Degradation - Targets: ['NT_DIST01', 'HCM_DIST01'] - Status: SUCCESS
+[2026-10-24T08:34:35.716072+00:00] [INJECT] [F12] Multi-Metric Anomaly - Targets: ['WAN_FIVEG', 'BL_GW', 'NT_CORE', 'FaucetController'] - Status: SUCCESS
+[2026-10-24T08:34:48.297629+00:00] [RECOVER] [F12] Multi-Metric Anomaly - Targets: ['WAN_FIVEG', 'BL_GW', 'NT_CORE', 'FaucetController'] - Status: SUCCESS

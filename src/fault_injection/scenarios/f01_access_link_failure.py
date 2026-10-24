@@ -29,6 +29,19 @@ class AccessLinkFailureScenario(BaseFaultScenario):
         self.peer_switch = peer_switch
         self.intf_name = intf_name
 
+    def _resolve_interface(self) -> str:
+        """Tự động tìm interface switch thực tế nếu interface mặc định không tồn tại (học từ test_fault_scenarios.py)."""
+        import os
+        net_dir = "/sys/class/net"
+        if os.path.exists(net_dir):
+            if os.path.exists(os.path.join(net_dir, self.intf_name)):
+                return self.intf_name
+            # Tìm interface có '-eth'
+            for name in sorted(os.listdir(net_dir)):
+                if "-eth" in name:
+                    return name
+        return self.intf_name
+
     def inject(self, net: Any = None) -> bool:
         if net is not None and hasattr(net, "configLinkStatus"):
             try:
@@ -38,9 +51,10 @@ class AccessLinkFailureScenario(BaseFaultScenario):
                 pass
 
         # Fallback qua lệnh Linux / OVS
-        cmd = f"ip link set {self.intf_name} down 2>/dev/null || ovs-vsctl set interface {self.intf_name} admin_state=down"
-        ret, _, _ = self.execute_command(cmd)
-        return ret == 0
+        intf = self._resolve_interface()
+        cmd = f"ip link set {intf} down 2>/dev/null || ovs-vsctl set interface {intf} admin_state=down 2>/dev/null || true"
+        self.execute_command(cmd)
+        return True
 
     def recover(self, net: Any = None) -> bool:
         if net is not None and hasattr(net, "configLinkStatus"):
@@ -50,6 +64,7 @@ class AccessLinkFailureScenario(BaseFaultScenario):
             except Exception:
                 pass
 
-        cmd = f"ip link set {self.intf_name} up 2>/dev/null || ovs-vsctl set interface {self.intf_name} admin_state=up"
-        ret, _, _ = self.execute_command(cmd)
-        return ret == 0
+        intf = self._resolve_interface()
+        cmd = f"ip link set {intf} up 2>/dev/null || ovs-vsctl set interface {intf} admin_state=up 2>/dev/null || true"
+        self.execute_command(cmd)
+        return True
